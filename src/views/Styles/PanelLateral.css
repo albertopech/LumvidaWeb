@@ -1,0 +1,685 @@
+/*panel lateral 
+/* Base styles */
+:root {
+    --light-bg: #ffffff;
+    --light-text: #1a202c;
+    --light-bg-secondary: #f7fafc;
+    --light-border: rgba(0, 0, 0, 0.1);
+    --light-accent: #4c51bf;
+    --light-accent-hover: #434190;
+    --light-highlight: #ebf4ff;
+    --light-highlight-border: #4c51bf;
+    --light-muted: #718096;
+    
+    --dark-bg: #1a202c;
+    --dark-text: #f7fafc;
+    --dark-bg-secondary: #2d3748;
+    --dark-border: rgba(255, 255, 255, 0.1);
+    --dark-accent: #805ad5;
+    --dark-accent-hover: #6b46c1;
+    --dark-highlight: #2d3748;
+    --dark-highlight-border: #805ad5;
+    --dark-muted: #a0aec0;
+    
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --sidebar-width-expanded: 16rem;
+    --sidebar-width-collapsed: 5rem;
+    --transition-speed: 0.3s;
+  }
+  
+  /* Layout */
+  .app-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  /* Theme classes */
+  .light-mode {
+    --bg: var(--light-bg);
+    --text: var(--light-text);
+    --bg-secondary: var(--light-bg-secondary);
+    --border: var(--light-border);
+    --accent: var(--light-accent);
+    --accent-hover: var(--light-accent-hover);
+    --highlight: var(--light-highlight);
+    --highlight-border: var(--light-highlight-border);
+    --muted: var(--light-muted);
+  }
+  
+  .dark-mode {
+    --bg: var(--dark-bg);
+    --text: var(--dark-text);
+    --bg-secondary: var(--dark-bg-secondary);
+    --border: var(--dark-border);
+    --accent: var(--dark-accent);
+    --accent-hover: var(--dark-accent-hover);
+    --highlight: var(--dark-highlight);
+    --highlight-border: var(--dark-highlight-border);
+    --muted: var(--dark-muted);
+  }
+  
+  /* Mobile toggle button */
+  .mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 50;
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: var(--bg);
+    box-shadow: var(--shadow);
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+  }
+  
+  @media (max-width: 768px) {
+    .mobile-toggle {
+        display: block;
+    }
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    position: relative;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    transition: all var(--transition-speed) ease-in-out;
+    z-index: 40;
+  }
+  
+  .sidebar.expanded {
+    width: var(--sidebar-width-expanded);
+  }
+  
+  .sidebar.collapsed {
+    width: var(--sidebar-width-collapsed);
+  }
+  
+  .sidebar.show {
+    left: 0;
+  }
+  
+  .sidebar.hide {
+    left: -100%;
+  }
+  
+  @media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+    }
+  }
+  
+  /* Sidebar header */
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .app-title {
+    font-weight: bold;
+    font-size: 1.25rem;
+  }
+  
+  .toggle-button {
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.2s;
+  }
+  
+  .toggle-button:hover {
+    background: var(--bg-secondary);
+  }
+  
+  /* Search */
+  .search-container {
+    padding: 1rem;
+    transition: all var(--transition-speed);
+  }
+  
+  .search-container.hidden {
+    display: none;
+  }
+  
+  .search-box {
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .search-icon {
+    color: var(--muted);
+  }
+  
+  .search-input {
+    margin-left: 0.5rem;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    outline: none;
+  }
+  
+  .search-input::placeholder {
+    color: var(--muted);
+  }
+  
+  /* Menu */
+  .sidebar-menu {
+    margin-top: 1.5rem;
+    padding: 0 0.5rem;
+  }
+  
+  .menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .menu-item {
+    margin-bottom: 0.5rem;
+  }
+  
+  .menu-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s;
+    background: transparent;
+    cursor: pointer;
+    border: none;
+    color: var(--text);
+    text-align: left;
+  }
+  
+  .menu-button:hover {
+    background: var(--bg-secondary);
+  }
+  
+  .menu-button.active {
+    background: var(--highlight);
+    border-left: 4px solid var(--highlight-border);
+  }
+  
+  .menu-icon {
+    display: inline-block;
+  }
+  
+  .menu-button.active .menu-icon {
+    color: var(--accent);
+  }
+  
+  .menu-label {
+    margin-left: 0.75rem;
+    font-weight: 500;
+  }
+  
+  /* Notifications */
+  .notifications-container {
+    padding: 0 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .notifications-container.hidden {
+    display: none;
+  }
+  
+  .notifications-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-secondary);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+  }
+  
+  .notifications-title {
+    display: flex;
+    align-items: center;
+  }
+  
+  .notification-icon {
+    color: var(--muted);
+  }
+  
+  .notification-label {
+    margin-left: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .notification-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    color: white;
+    background: var(--accent);
+  }
+  
+  /* User Profile */
+  .user-profile {
+    position: absolute;
+    bottom: 5rem;
+    width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .profile-container {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+  }
+  
+  .profile-container:hover {
+    background: var(--bg-secondary);
+  }
+  
+  .profile-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: white;
+  }
+  
+  .profile-info {
+    margin-left: 0.75rem;
+  }
+  
+  .profile-name {
+    font-weight: 500;
+  }
+  
+  .profile-email {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  
+  /* Footer */
+  .sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .theme-toggle {
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.2s;
+  }
+  
+  .theme-toggle:hover {
+    background: var(--bg-secondary);
+  }
+  
+  .logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    color: white;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .logout-button.with-text {
+    padding: 0.5rem 1rem;
+  }
+  
+  .logout-button:hover {
+    background: var(--accent-hover);
+  }
+  
+  .logout-text {
+    margin-left: 0.5rem;
+  }
+  
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  
+  .content-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .content-card {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow);
+    background: var(--bg);
+  }
+  
+  .content-paragraph {
+    margin-bottom: 1rem;
+  }
+  
+  .content-paragraph:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Estilos adicionales para el dashboard y el mapa */
+  .dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+  
+  .stat-card {
+    background-color: var(--bg);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .stat-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+    color: var(--text);
+  }
+  
+  .dashboard-map-container {
+    background-color: var(--bg);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: var(--shadow);
+  }
+  
+  .dashboard-map-container h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: var(--text);
+  }
+  
+  /* Estilos específicos para el mapa de Leaflet */
+  #map {
+    height: 400px;
+    width: 100%;
+    border-radius: 8px;
+    z-index: 1; /* Asegura que el mapa esté por debajo del sidebar en dispositivos móviles */
+  }
+  
+  /* Ajustes para el mapa en modo oscuro */
+  .dark-mode .leaflet-container {
+    background-color: var(--dark-bg-secondary);
+  }
+  
+  .dark-mode .leaflet-tile {
+    filter: brightness(0.8) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  }
+  
+  .dark-mode .leaflet-marker-icon {
+    filter: brightness(1.2);
+  }
+  
+  .dark-mode .leaflet-popup-content-wrapper {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .leaflet-popup-tip {
+    background-color: var(--dark-bg);
+  }
+  
+  /* Panel de Incidencias - Distribución flexible */
+  .panel-incidencias {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  .incidencia-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background-color: var(--bg);
+    border-radius: 8px;
+    padding: 10px 15px;
+    box-shadow: var(--shadow);
+    min-width: 0; /* Permitir que los elementos se achiquen si es necesario */
+  }
+  
+  /* Estilos responsivos */
+  @media (max-width: 768px) {
+    .dashboard-stats {
+      grid-template-columns: 1fr;
+    }
+    
+    #map {
+      height: 300px;
+    }
+    
+    .content-card {
+      padding: 1rem;
+    }
+    
+    .panel-incidencias {
+      flex-direction: column;
+    }
+  }
+  
+  .filters-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+  }
+  
+  .filter-input, .filter-select, .filter-button {
+    padding: 8px;
+    font-size: 16px;
+  }
+  
+  .filter-input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .filter-select {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .filter-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  
+  
+  /* Añadir estos estilos a tu archivo InidenciasPanel.css */
+  
+  /* Asegurar que el panel lateral no cambie de manera brusca */
+  .sidebar {
+    position: relative;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    transition: width var(--transition-speed) ease-in-out;
+    z-index: 40;
+    overflow: hidden; /* Evitar desbordamiento durante la transición */
+  }
+  
+  /* Ajustar botones en el pie de página */
+  .sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center; /* Centrar el botón cuando está colapsado */
+    background: var(--bg); /* Asegurar que tenga fondo */
+  }
+  
+  /* Estilos específicos para el botón de cerrar sesión */
+  .logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    color: white;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, width 0.3s;
+    width: auto; /* Ajustar automáticamente cuando está colapsado */
+    max-width: 100%; /* Asegurar que no se desborde */
+    overflow: hidden; /* Ocultar texto que desborda */
+    white-space: nowrap; /* Evitar saltos de línea */
+  }
+  
+  .logout-button.with-text {
+    padding: 0.75rem 1.25rem;
+    width: 100%; /* Usar todo el ancho disponible cuando está expandido */
+  }
+  
+  .logout-text {
+    margin-left: 0.5rem;
+    transition: opacity 0.2s;
+  }
+  
+  /* Animación suave para el cambio de panel */
+  .main-content {
+    flex: 1;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    color: var(--text);
+    overflow-x: hidden;
+    transition: margin-left var(--transition-speed);
+  }
+  
+  /* Mejorar la visualización en dispositivos móviles */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      transform: translateX(0);
+      transition: transform var(--transition-speed), width var(--transition-speed);
+    }
+    
+    .sidebar.hide {
+      transform: translateX(-100%);
+    }
+    
+    .main-content {
+      margin-left: 0;
+      width: 100%;
+    }
+    
+    .sidebar-footer {
+      padding: 0.75rem;
+    }
+    
+    .logout-button {
+      padding: 0.5rem;
+    }
+    
+    .logout-button.with-text {
+      padding: 0.5rem 1rem;
+    }
+  }
+  
+  /* Optimizar transiciones */
+  .sidebar-menu, .notifications-container, .search-container, .user-profile {
+    transition: opacity var(--transition-speed);
+  }
+  
+  /* Mejorar la accesibilidad del botón toggle */
+  .toggle-button {
+    padding: 0.5rem;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.2s;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .toggle-button:hover {
+    background: var(--bg-secondary);
+  }
+  
+  /* Asegurar que el contenido tenga suficiente espacio */
+  .content-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }

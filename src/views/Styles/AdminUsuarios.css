@@ -1,0 +1,410 @@
+/* src/views/Styles/AdminUsuarios.css */
+
+/* Contenedor principal */
+.admin-usuarios-container {
+    padding: 20px;
+    max-width: 100%;
+  }
+  
+  /* Estilos del encabezado */
+  .admin-header {
+    margin-bottom: 25px;
+  }
+  
+  .admin-header h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 8px;
+  }
+  
+  .admin-header p {
+    color: #666;
+    font-size: 1rem;
+  }
+  
+  /* Contenedor de filtros */
+  .filtros-container {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .filtros-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .filtro-grupo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .filtro-grupo label {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .filtro-grupo input,
+  .filtro-grupo select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 0.95rem;
+  }
+  
+  .filtro-reset {
+    background-color: #f0f0f0;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 22px;
+    transition: background-color 0.2s;
+  }
+  
+  .filtro-reset:hover {
+    background-color: #e5e5e5;
+  }
+  
+  /* Tabla de usuarios */
+  .tabla-usuarios-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .total-usuarios {
+    padding: 12px 20px;
+    margin: 0;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #eee;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .tabla-scroll {
+    overflow-x: auto;
+  }
+  
+  .tabla-usuarios {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .tabla-usuarios th {
+    background-color: #f5f5f5;
+    color: #444;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.95rem;
+  }
+  
+  .tabla-usuarios td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 0.95rem;
+  }
+  
+  .tabla-usuarios tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .tabla-usuarios tr:hover td {
+    background-color: #f9f9f9;
+  }
+  
+  .badge-rol {
+    background-color: #e9f0fd;
+    color: #4a6fb3;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    display: inline-block;
+  }
+  
+  .acciones-celda {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .btn-editar,
+  .btn-eliminar {
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-editar:hover {
+    background-color: rgba(0, 120, 255, 0.1);
+  }
+  
+  .btn-eliminar:hover {
+    background-color: rgba(255, 50, 50, 0.1);
+  }
+  
+  .no-resultados {
+    text-align: center;
+    color: #888;
+    padding: 30px 0;
+  }
+  
+  /* Loading spinner */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Mensajes de éxito/error */
+  .mensaje {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+  
+  .mensaje.error {
+    background-color: #fff5f5;
+    border-left: 4px solid #ff4d4f;
+    color: #cf1322;
+  }
+  
+  .mensaje.success {
+    background-color: #f6ffed;
+    border-left: 4px solid #52c41a;
+    color: #389e0d;
+  }
+  
+  .mensaje-icon {
+    margin-right: 10px;
+    font-size: 1.1rem;
+  }
+  
+  /* Estilos para modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    animation: modalAppear 0.3s ease-out;
+  }
+  
+  @keyframes modalAppear {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+  
+  .close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+    padding: 0 5px;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    gap: 10px;
+  }
+  
+  /* Estilos para modal de confirmación */
+  .modal-confirmar {
+    max-width: 400px;
+  }
+  
+  .confirmacion-mensaje {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+  
+  .confirmacion-advertencia {
+    color: #ff4d4f;
+    font-size: 0.9rem;
+  }
+  
+  /* Formulario de edición */
+  .form-editar {
+    padding: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 0.95rem;
+  }
+  
+  .form-group input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .form-row .form-group {
+    flex: 1;
+  }
+  
+  .form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
+  }
+  
+  .btn-cancelar {
+    background-color: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-guardar {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-eliminar {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-cancelar:hover {
+    background-color: #e8e8e8;
+  }
+  
+  .btn-guardar:hover {
+    background-color: #40a9ff;
+  }
+  
+  .btn-eliminar:hover {
+    background-color: #ff7875;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .form-row {
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .tabla-usuarios th:nth-child(3),
+    .tabla-usuarios td:nth-child(3) {
+      display: none; /* Ocultar columna de email en móviles */
+    }
+    
+    .filtros-form {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .filtro-reset {
+      margin-top: 5px;
+    }
+  }

@@ -1,0 +1,411 @@
+/* src/views/Styles/gestionPermisos.css */
+
+.gestion-permisos-container {
+    padding: 20px;
+    width: 100%;
+  }
+  
+  .permisos-header {
+    margin-bottom: 25px;
+  }
+  
+  .permisos-header h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 8px;
+  }
+  
+  .permisos-header p {
+    color: #666;
+    font-size: 1rem;
+  }
+  
+  /* Mensajes de éxito o error */
+  .mensaje {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+  
+  .mensaje.error {
+    background-color: #fff5f5;
+    border-left: 4px solid #ff4d4f;
+    color: #cf1322;
+  }
+  
+  .mensaje.success {
+    background-color: #f6ffed;
+    border-left: 4px solid #52c41a;
+    color: #389e0d;
+  }
+  
+  .mensaje-icon {
+    margin-right: 10px;
+    font-size: 1.1rem;
+  }
+  
+  /* Layout principal */
+  .permisos-layout {
+    display: flex;
+    gap: 20px;
+    min-height: 70vh;
+  }
+  
+  /* Panel de usuarios */
+  .usuarios-panel {
+    flex: 1;
+    max-width: 350px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .panel-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .panel-header h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+  
+  .busqueda-usuarios {
+    position: relative;
+  }
+  
+  .busqueda-usuarios input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 0.95rem;
+    padding-right: 30px;
+  }
+  
+  .btn-limpiar-busqueda {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #999;
+    cursor: pointer;
+  }
+  
+  .lista-usuarios {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+  }
+  
+  .usuario-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .usuario-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .usuario-item.seleccionado {
+    background-color: #e6f7ff;
+    border-left: 3px solid #1890ff;
+  }
+  
+  .usuario-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #1890ff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 1rem;
+  }
+  
+  .usuario-info {
+    flex: 1;
+  }
+  
+  .usuario-nombre {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2px;
+  }
+  
+  .usuario-detalles {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .usuario-rol {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  
+  .badge-personalizado {
+    background-color: #fff1f0;
+    color: #ff4d4f;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+  
+  .no-resultados {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+  }
+  
+  /* Panel de permisos */
+  .permisos-panel {
+    flex: 2;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .usuario-meta {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  
+  .usuario-rol-info {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .rol-badge {
+    background-color: #f0f2f5;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .permisos-personalizados-info {
+    font-size: 0.9rem;
+    color: #ff4d4f;
+    font-style: italic;
+  }
+  
+  .modulos-permisos {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .instrucciones {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .modulo-permiso-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .permiso-toggle {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+  
+  .permiso-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+  }
+  
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .toggle-slider {
+    background-color: #1890ff;
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+  }
+  
+  .modulo-info {
+    flex: 1;
+  }
+  
+  .modulo-nombre {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 3px;
+  }
+  
+  .modulo-descripcion {
+    font-size: 0.85rem;
+    color: #666;
+  }
+  
+  .acciones-permisos {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .btn-secundario {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+  }
+  
+  .btn-primario {
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+  }
+  
+  .btn-secundario:hover {
+    background-color: #e6e6e6;
+  }
+  
+  .btn-primario:hover {
+    background-color: #40a9ff;
+  }
+  
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* Mensaje para seleccionar usuario */
+  .seleccionar-usuario-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px;
+    text-align: center;
+    color: #999;
+  }
+  
+  .icon-seleccionar {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    animation: bounce 1s infinite alternate;
+  }
+  
+  @keyframes bounce {
+    from { transform: translateX(0); }
+    to { transform: translateX(-10px); }
+  }
+  
+  .seleccionar-usuario-msg h3 {
+    margin: 0 0 10px 0;
+    color: #666;
+  }
+  
+  .seleccionar-usuario-msg p {
+    color: #999;
+    max-width: 300px;
+  }
+  
+  /* Estados de carga */
+  .cargando-usuarios, .cargando-permisos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #999;
+  }
+  
+  .loading-spinner {
+    width: 35px;
+    height: 35px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #1890ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Responsive */
+  @media (max-width: 900px) {
+    .permisos-layout {
+      flex-direction: column;
+    }
+    
+    .usuarios-panel {
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
+    
+    .lista-usuarios {
+      max-height: 300px;
+    }
+  }
