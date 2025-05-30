@@ -1,5 +1,5 @@
 // src/views/Login.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginWithUsernamePassword } from "../controllers/Login";
 import "./Styles/Login.css";
@@ -10,6 +10,7 @@ const Login = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const isSubmitting = useRef(false);
 
     // Verificar si ya hay sesión al cargar el componente
     useEffect(() => {
@@ -27,6 +28,11 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        
+        // Prevenir múltiples envíos
+        if (isSubmitting.current || loading) return;
+        
+        isSubmitting.current = true;
         setError("");
         setLoading(true);
 
@@ -40,7 +46,7 @@ const Login = () => {
                 // Guardar datos en localStorage
                 localStorage.setItem("userRole", result.rol);
                 localStorage.setItem("username", result.usuario);
-                localStorage.setItem("userId", result.id); // IMPORTANTE: Almacenar el ID del DOCUMENTO, no el usuarioId
+                localStorage.setItem("userId", result.id); 
                 localStorage.setItem("isAuthenticated", "true");
                 
                 // Guardar nombre si está disponible
@@ -59,9 +65,14 @@ const Login = () => {
             setError("Ocurrió un error durante la autenticación. Intente nuevamente.");
         } finally {
             setLoading(false);
+            // Permitir envíos futuros después de un breve retraso
+            setTimeout(() => {
+                isSubmitting.current = false;
+            }, 500);
         }
     };
 
+    // Simplificamos el mensaje de error para evitar duplicación visual
     return (
         <div className="login-container">
             <div className="login-card">
@@ -114,25 +125,17 @@ const Login = () => {
                         </div>
                     </div>
 
+                    {/* Simplificamos el mensaje de error */}
                     {error && (
-                        <div className="error-container">
-                            <div className="error-content">
-                                <div className="error-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div className="error-message">
-                                    <p>{error}</p>
-                                </div>
-                            </div>
+                        <div className="error-container-simple">
+                            {error}
                         </div>
                     )}
 
                     <div className="button-container">
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || isSubmitting.current}
                             className="login-button"
                         >
                             {loading ? (

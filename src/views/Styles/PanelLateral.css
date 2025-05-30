@@ -1,4 +1,4 @@
-/*panel lateral 
+/*panel lateral */
 /* Base styles */
 :root {
     --light-bg: #ffffff;
@@ -23,8 +23,8 @@
     
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --sidebar-width-expanded: 16rem;
-    --sidebar-width-collapsed: 5rem;
-    --transition-speed: 0.3s;
+    --sidebar-width-collapsed: 4rem;
+    --transition-speed: 0.2s;
   }
   
   /* Layout */
@@ -87,8 +87,9 @@
     background: var(--bg);
     color: var(--text);
     box-shadow: var(--shadow);
-    transition: all var(--transition-speed) ease-in-out;
+    transition: width var(--transition-speed) ease;
     z-index: 40;
+    overflow: hidden;
   }
   
   .sidebar.expanded {
@@ -110,6 +111,15 @@
   @media (max-width: 768px) {
     .sidebar {
         position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        transform: translateX(0);
+        transition: transform var(--transition-speed), width var(--transition-speed);
+    }
+    
+    .sidebar.hide {
+      transform: translateX(-100%);
     }
   }
   
@@ -124,7 +134,13 @@
   
   .app-title {
     font-weight: bold;
-    font-size: 1.25rem;
+    font-size: 0.95rem;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+  }
+  
+  .sidebar.collapsed .app-title {
+    opacity: 0;
   }
   
   .toggle-button {
@@ -135,6 +151,11 @@
     cursor: pointer;
     color: var(--text);
     transition: background 0.2s;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .toggle-button:hover {
@@ -198,12 +219,13 @@
     width: 100%;
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
-    transition: all 0.2s;
     background: transparent;
     cursor: pointer;
     border: none;
     color: var(--text);
     text-align: left;
+    font-size: 0.8rem;
+    transition: background-color 0.15s ease;
   }
   
   .menu-button:hover {
@@ -217,6 +239,9 @@
   
   .menu-icon {
     display: inline-block;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
   }
   
   .menu-button.active .menu-icon {
@@ -226,16 +251,28 @@
   .menu-label {
     margin-left: 0.75rem;
     font-weight: 500;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+  }
+  
+  .sidebar.collapsed .menu-label {
+    opacity: 0;
   }
   
   /* Notifications */
   .notifications-container {
     padding: 0 1rem;
     margin-top: 1.5rem;
+    opacity: 1;
+    transition: opacity 0.15s ease;
   }
   
-  .notifications-container.hidden {
-    display: none;
+  .sidebar.collapsed .notifications-container {
+    opacity: 0;
+    pointer-events: none;
   }
   
   .notifications-box {
@@ -259,6 +296,8 @@
   .notification-label {
     margin-left: 0.5rem;
     font-weight: 500;
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
   
   .notification-badge {
@@ -275,6 +314,13 @@
     bottom: 5rem;
     width: 100%;
     padding: 0 1rem;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+  }
+  
+  .sidebar.collapsed .user-profile {
+    opacity: 0;
+    pointer-events: none;
   }
   
   .profile-container {
@@ -282,6 +328,7 @@
     align-items: center;
     padding: 0.75rem;
     border-radius: 0.5rem;
+    transition: background-color 0.15s ease;
   }
   
   .profile-container:hover {
@@ -297,30 +344,50 @@
     justify-content: center;
     background: var(--accent);
     color: white;
+    flex-shrink: 0;
   }
   
   .profile-info {
     margin-left: 0.75rem;
+    min-width: 0;
+    flex: 1;
   }
   
   .profile-name {
     font-weight: 500;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .profile-email {
-    font-size: 0.875rem;
+    font-size: 0.7rem;
     color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .profile-role {
+    font-size: 0.7rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   /* Footer */
   .sidebar-footer {
     position: absolute;
     bottom: 0;
+    left: 0;
     width: 100%;
     padding: 1rem;
     border-top: 1px solid var(--border);
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Centrar el botón cuando está colapsado */
+    background: var(--bg); /* Asegurar que tenga fondo */
   }
   
   .theme-toggle {
@@ -341,17 +408,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border-radius: 0.5rem;
     color: white;
     background: var(--accent);
     border: none;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, width 0.3s;
+    width: auto; /* Ajustar automáticamente cuando está colapsado */
+    max-width: 100%; /* Asegurar que no se desborde */
+    overflow: hidden; /* Ocultar texto que desborda */
+    white-space: nowrap; /* Evitar saltos de línea */
   }
   
   .logout-button.with-text {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.25rem;
+    width: 100%; /* Usar todo el ancho disponible cuando está expandido */
   }
   
   .logout-button:hover {
@@ -360,6 +432,14 @@
   
   .logout-text {
     margin-left: 0.5rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+  }
+  
+  .sidebar.collapsed .logout-text {
+    opacity: 0;
   }
   
   /* Main Content */
@@ -515,6 +595,23 @@
     .panel-incidencias {
       flex-direction: column;
     }
+    
+    .main-content {
+      margin-left: 0;
+      width: 100%;
+    }
+    
+    .sidebar-footer {
+      padding: 0.75rem;
+    }
+    
+    .logout-button {
+      padding: 0.5rem;
+    }
+    
+    .logout-button.with-text {
+      padding: 0.5rem 1rem;
+    }
   }
   
   .filters-container {
@@ -549,137 +646,4 @@
     padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
-  }
-  
-  
-  
-  /* Añadir estos estilos a tu archivo InidenciasPanel.css */
-  
-  /* Asegurar que el panel lateral no cambie de manera brusca */
-  .sidebar {
-    position: relative;
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    box-shadow: var(--shadow);
-    transition: width var(--transition-speed) ease-in-out;
-    z-index: 40;
-    overflow: hidden; /* Evitar desbordamiento durante la transición */
-  }
-  
-  /* Ajustar botones en el pie de página */
-  .sidebar-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 1rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: center; /* Centrar el botón cuando está colapsado */
-    background: var(--bg); /* Asegurar que tenga fondo */
-  }
-  
-  /* Estilos específicos para el botón de cerrar sesión */
-  .logout-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    color: white;
-    background: var(--accent);
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s, width 0.3s;
-    width: auto; /* Ajustar automáticamente cuando está colapsado */
-    max-width: 100%; /* Asegurar que no se desborde */
-    overflow: hidden; /* Ocultar texto que desborda */
-    white-space: nowrap; /* Evitar saltos de línea */
-  }
-  
-  .logout-button.with-text {
-    padding: 0.75rem 1.25rem;
-    width: 100%; /* Usar todo el ancho disponible cuando está expandido */
-  }
-  
-  .logout-text {
-    margin-left: 0.5rem;
-    transition: opacity 0.2s;
-  }
-  
-  /* Animación suave para el cambio de panel */
-  .main-content {
-    flex: 1;
-    padding: 1.5rem;
-    background: var(--bg-secondary);
-    color: var(--text);
-    overflow-x: hidden;
-    transition: margin-left var(--transition-speed);
-  }
-  
-  /* Mejorar la visualización en dispositivos móviles */
-  @media (max-width: 768px) {
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      transform: translateX(0);
-      transition: transform var(--transition-speed), width var(--transition-speed);
-    }
-    
-    .sidebar.hide {
-      transform: translateX(-100%);
-    }
-    
-    .main-content {
-      margin-left: 0;
-      width: 100%;
-    }
-    
-    .sidebar-footer {
-      padding: 0.75rem;
-    }
-    
-    .logout-button {
-      padding: 0.5rem;
-    }
-    
-    .logout-button.with-text {
-      padding: 0.5rem 1rem;
-    }
-  }
-  
-  /* Optimizar transiciones */
-  .sidebar-menu, .notifications-container, .search-container, .user-profile {
-    transition: opacity var(--transition-speed);
-  }
-  
-  /* Mejorar la accesibilidad del botón toggle */
-  .toggle-button {
-    padding: 0.5rem;
-    border-radius: 50%;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--text);
-    transition: background 0.2s;
-    min-width: 32px;
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .toggle-button:hover {
-    background: var(--bg-secondary);
-  }
-  
-  /* Asegurar que el contenido tenga suficiente espacio */
-  .content-container {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 0;
   }

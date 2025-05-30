@@ -1,4 +1,4 @@
-// src/controllers/PermisosController.js - Versión actualizada
+// src/controllers/PermisosController.js - Versión completa actualizada con Brigadas
 import { db } from '../models/firebase';
 import { collection, doc, getDoc, setDoc, deleteDoc } 
 from 'firebase/firestore';
@@ -15,14 +15,38 @@ export class PermisosController {
   static obtenerPermisosModulos(rol) {
     // Definición de los permisos por rol
     const permisosRol = {
-      'jefe_ayuntatel': ['users', 'admin_users', 'admin_permisos'], // Acceso completo
-      'jefe_departamento': ['analytics', 'dashboard_jefe'], // Acceso a módulos de supervisión
-      'basura': ['dashboard'], // Solo panel, reportes y gestión
-      'alumbrado': ['dashboard'], // Solo panel, reportes y gestión
-      'drenaje': ['dashboard'], // Solo panel, reportes y gestión
-      'bacheo': ['dashboard'], // Solo panel, reportes y gestión
-      'capturista': ['reports', 'admin_reports'], // Reportes y gestión de reportes
-      'auditor': ['dashboard', 'analytics', 'admin_reports'], // Panel, estadísticas y gestión
+      'jefe_ayuntatel': [
+        'users', 
+        'admin_users', 
+        'admin_permisos'
+      ], // Acceso completo
+      'jefe_departamento': [
+        'analytics', 
+        'dashboard_jefe', 
+        'admin_permisos', 
+        'admin_brigadas'
+      ], // Acceso a módulos de supervisión + permisos + brigadas (SOLO BRIGADAS PARA JEFE_DEPARTAMENTO)
+      'basura': [
+        'dashboard'
+      ], // Solo panel de reportes específico
+      'alumbrado': [
+        'dashboard'
+      ], // Solo panel de reportes específico
+      'drenaje': [
+        'dashboard'
+      ], // Solo panel de reportes específico
+      'bacheo': [
+        'dashboard'
+      ], // Solo panel de reportes específico
+      'capturista': [
+        'reports', 
+        'admin_reports'
+      ], // Reportes y gestión de reportes
+      'auditor': [
+        'dashboard', 
+        'analytics', 
+        'admin_reports'
+      ], // Panel, estadísticas y gestión
     };
     
     // Si el rol no está definido, devolver acceso mínimo
@@ -274,6 +298,107 @@ export class PermisosController {
       console.error("Error al verificar acceso:", error);
       return false;
     }
+  }
+
+  /**
+   * Obtiene todos los módulos disponibles en el sistema con sus descripciones
+   * @returns {Array} - Lista de módulos con sus metadatos
+   */
+  static obtenerTodosLosModulos() {
+    return [
+      { 
+        id: 'dashboard', 
+        nombre: 'Panel Administrativo', 
+        descripcion: 'Vista general del sistema y reportes por departamento',
+        categoria: 'Principal'
+      },
+      { 
+        id: 'dashboard_jefe', 
+        nombre: 'Dashboard Departamentos', 
+        descripcion: 'Vista avanzada para jefes de departamento',
+        categoria: 'Supervisión'
+      },
+      { 
+        id: 'users', 
+        nombre: 'Registrar Usuario', 
+        descripcion: 'Permite registrar nuevos usuarios en el sistema',
+        categoria: 'Administración'
+      },
+      { 
+        id: 'reports', 
+        nombre: 'Registrar Reporte', 
+        descripcion: 'Creación de nuevos reportes de incidencias',
+        categoria: 'Reportes'
+      },
+      { 
+        id: 'admin_reports', 
+        nombre: 'Gestión de Reportes', 
+        descripcion: 'Administración y edición de reportes existentes',
+        categoria: 'Administración'
+      },
+      { 
+        id: 'analytics', 
+        nombre: 'Estadísticas', 
+        descripcion: 'Visualización de estadísticas y gráficos del sistema',
+        categoria: 'Análisis'
+      },
+      { 
+        id: 'admin_users', 
+        nombre: 'Admin. Usuarios', 
+        descripcion: 'Administración avanzada de usuarios existentes',
+        categoria: 'Administración'
+      },
+      { 
+        id: 'admin_permisos', 
+        nombre: 'Gestión de Permisos', 
+        descripcion: 'Configuración de permisos y roles de usuarios',
+        categoria: 'Administración'
+      },
+      { 
+        id: 'admin_brigadas', 
+        nombre: 'Gestión de Brigadas', 
+        descripcion: 'Creación y administración de brigadas de trabajo',
+        categoria: 'Administración'
+      }
+    ];
+  }
+
+  /**
+   * Obtiene los módulos disponibles agrupados por categoría
+   * @returns {Object} - Objeto con módulos agrupados por categoría
+   */
+  static obtenerModulosPorCategoria() {
+    const modulos = this.obtenerTodosLosModulos();
+    const agrupados = {};
+    
+    modulos.forEach(modulo => {
+      if (!agrupados[modulo.categoria]) {
+        agrupados[modulo.categoria] = [];
+      }
+      agrupados[modulo.categoria].push(modulo);
+    });
+    
+    return agrupados;
+  }
+
+  /**
+   * Verifica si un rol tiene permisos para gestionar brigadas
+   * @param {string} rol - Rol del usuario
+   * @returns {boolean} - true si puede gestionar brigadas
+   */
+  static puedeGestionarBrigadas(rol) {
+    // SOLO el jefe de departamento puede gestionar brigadas
+    return rol === 'jefe_departamento';
+  }
+
+  /**
+   * Verifica si un rol puede asignar reportes a brigadas
+   * @param {string} rol - Rol del usuario
+   * @returns {boolean} - true si puede asignar reportes
+   */
+  static puedeAsignarReportes(rol) {
+    const rolesConAcceso = ['jefe_ayuntatel', 'jefe_departamento', 'auditor'];
+    return rolesConAcceso.includes(rol);
   }
 }
 

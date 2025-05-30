@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../models/firebase';
 import { CATEGORIAS } from '../models/reporteModel';
+import { BrigadaController } from '../controllers/BrigadaController';
 import './Styles/reportes.css';
 import { jsPDF } from 'jspdf';
 
@@ -78,6 +79,10 @@ const ReportesBasura = () => {
     ciudad: 'Chetumal, Q. Roo'
   });
 
+  // NUEVOS ESTADOS para asignación de brigadas
+  const [brigadasDisponibles, setBrigadasDisponibles] = useState([]);
+  const [asignandoBrigada, setAsignandoBrigada] = useState(false);
+
   // Cargar reportes
   const cargarReportes = async () => {
     try {
@@ -107,9 +112,144 @@ const ReportesBasura = () => {
     }
   };
 
-  // Cargar reportes al iniciar el componente
+  // NUEVA FUNCIÓN: Cargar brigadas disponibles para basura
+  const cargarBrigadasDisponibles = async () => {
+    try {
+      const resultado = await BrigadaController.obtenerBrigadasDisponibles(CATEGORIAS.BASURA);
+      if (resultado.success) {
+        setBrigadasDisponibles(resultado.data);
+      } else {
+        console.error("Error al cargar brigadas:", resultado.error);
+        setBrigadasDisponibles([]);
+      }
+    } catch (error) {
+      console.error("Error al cargar brigadas:", error);
+      setBrigadasDisponibles([]);
+    }
+  };
+
+  // NUEVA FUNCIÓN: Asignar reporte a brigada (desde el selector)
+  const asignarBrigadaReporte = async (reporteId, brigadaId) => {
+    if (!brigadaId || brigadaId === '') {
+      return; // No hacer nada si no hay brigada seleccionada
+    }
+
+    setAsignandoBrigada(true);
+
+    try {
+      const usuarioActual = localStorage.getItem('username') || 'Sistema';
+      
+      const resultado = await BrigadaController.asignarReporte(
+        brigadaId,
+        reporteId,
+        usuarioActual
+      );
+
+      if (resultado.success) {
+        setMensajeExito(`Reporte asignado exitosamente a ${resultado.data.brigadaNombre}`);
+        
+        // Actualizar el reporte localmente
+        if (reporteSeleccionado && reporteSeleccionado.id === reporteId) {
+          const brigadaAsignada = brigadasDisponibles.find(b => b.id === brigadaId);
+          setReporteSeleccionado({
+            ...reporteSeleccionado,
+            estado: 'asignado',
+            brigadaAsignada: {
+              id: brigadaId,
+              nombre: brigadaAsignada?.nombre || 'Brigada',
+              tipo: brigadaAsignada?.tipo || '',
+              fechaAsignacion: new Date()
+            }
+          });
+        }
+        
+        // Actualizar la lista de reportes
+        setReportes(reportes.map(reporte => 
+          reporte.id === reporteId ? 
+          {
+            ...reporte,
+            estado: 'asignado',
+            brigadaAsignada: {
+              id: brigadaId,
+              nombre: resultado.data.brigadaNombre,
+              fechaAsignacion: new Date()
+            }
+          } : 
+          reporte
+        ));
+        
+        // Ocultar mensaje después de 3 segundos
+        setTimeout(() => {
+          setMensajeExito(null);
+        }, 3000);
+        
+      } else {
+        setError(resultado.error);
+      }
+    } catch (error) {
+      console.error("Error al asignar reporte:", error);
+      setError("Error al asignar el reporte a la brigada");
+    } finally {
+      setAsignandoBrigada(false);
+    }
+  };
+
+  // NUEVA FUNCIÓN: Desasignar reporte de brigada
+  const desasignarReporte = async (reporte) => {
+    if (!reporte.brigadaAsignada?.id) {
+      setError("Este reporte no tiene brigada asignada");
+      return;
+    }
+
+    if (!window.confirm(`¿Está seguro de desasignar este reporte de la brigada "${reporte.brigadaAsignada.nombre}"?`)) {
+      return;
+    }
+
+    try {
+      const resultado = await BrigadaController.desasignarReporte(
+        reporte.brigadaAsignada.id,
+        reporte.id
+      );
+
+      if (resultado.success) {
+        setMensajeExito("Reporte desasignado correctamente");
+        
+        // Actualizar el reporte localmente
+        if (reporteSeleccionado && reporteSeleccionado.id === reporte.id) {
+          setReporteSeleccionado({
+            ...reporteSeleccionado,
+            estado: 'pendiente',
+            brigadaAsignada: null
+          });
+        }
+        
+        // Actualizar la lista de reportes
+        setReportes(reportes.map(r => 
+          r.id === reporte.id ? 
+          {
+            ...r,
+            estado: 'pendiente',
+            brigadaAsignada: null
+          } : 
+          r
+        ));
+        
+        setTimeout(() => {
+          setMensajeExito(null);
+        }, 3000);
+      } else {
+        setError(resultado.error);
+      }
+    } catch (error) {
+      console.error("Error al desasignar reporte:", error);
+      setError("Error al desasignar el reporte");
+    }
+  };
+
+  // Cargar reportes y brigadas al iniciar el componente
   useEffect(() => {
     cargarReportes();
+    cargarBrigadasDisponibles();
   }, []);
 
   // Filtrar reportes según estado
@@ -243,9 +383,9 @@ const ReportesBasura = () => {
         yPos += lineHeight;
       }
       
-      // Asignación si existe
-      if (reporteSeleccionado.asignadoA) {
-        pdf.text(`Asignado a: ${reporteSeleccionado.asignadoA}`, 15, yPos);
+      // Brigada asignada si existe
+      if (reporteSeleccionado.brigadaAsignada) {
+        pdf.text(`Brigada asignada: ${reporteSeleccionado.brigadaAsignada.nombre}`, 15, yPos);
         yPos += lineHeight;
       }
       
@@ -342,6 +482,16 @@ const ReportesBasura = () => {
     }
   };
 
+  // Limpiar mensajes después de 3 segundos
+  useEffect(() => {
+    if (mensajeExito) {
+      const timer = setTimeout(() => {
+        setMensajeExito(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [mensajeExito]);
+
   // Renderizado condicional según el estado
   if (loading) {
     return (
@@ -375,6 +525,13 @@ const ReportesBasura = () => {
           <i className="fas fa-map-marker-alt"></i> {ubicacion.ciudad}
         </p>
       </header>
+
+      {/* Mensaje de éxito global */}
+      {mensajeExito && (
+        <div className="mensaje-exito-global">
+          <i className="fas fa-check-circle"></i> {mensajeExito}
+        </div>
+      )}
 
       {/* Panel Administrativo */}
       <div className="panel-admin">
@@ -519,6 +676,24 @@ const ReportesBasura = () => {
                     <i className="far fa-calendar-alt"></i>
                     <span>{formatearFecha(reporte.fecha)}</span>
                   </div>
+
+                  {/* Mostrar brigada asignada si existe */}
+                  {reporte.brigadaAsignada && (
+                    <div className="report-brigada-asignada">
+                      <i className="fas fa-users"></i>
+                      <span>Brigada: <strong>{reporte.brigadaAsignada.nombre}</strong></span>
+                      <button 
+                        className="btn-desasignar-mini"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          desasignarReporte(reporte);
+                        }}
+                        title="Desasignar brigada"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="report-card-footer">
@@ -574,7 +749,7 @@ const ReportesBasura = () => {
                   <div className="reporte-campo-valor">
                     <EstadoTag estado={reporteSeleccionado.estado || 'pendiente'} />
                     
-                    {/* Selector de estado (con funcionalidad real) */}
+                    {/* Selector de estado */}
                     <select 
                       className="estado-selector"
                       value={reporteSeleccionado.estado || 'pendiente'}
@@ -596,11 +771,51 @@ const ReportesBasura = () => {
                   </div>
                 </div>
                 
-                {reporteSeleccionado.asignadoA && (
+                {/* SECCIÓN DE BRIGADA: Solo mostrar cuando el estado es "asignado" */}
+                {reporteSeleccionado.estado === 'asignado' && (
                   <div className="reporte-campo">
-                    <div className="reporte-campo-label">Asignado a:</div>
+                    <div className="reporte-campo-label">Brigada Asignada:</div>
                     <div className="reporte-campo-valor">
-                      <i className="fas fa-user-check"></i> {reporteSeleccionado.asignadoA}
+                      {reporteSeleccionado.brigadaAsignada && (
+                        <div className="brigada-asignada-info">
+                          <i className="fas fa-users"></i>
+                          <span>{reporteSeleccionado.brigadaAsignada.nombre}</span>
+                          <small className="fecha-asignacion">
+                            Asignado el: {formatearFecha(reporteSeleccionado.brigadaAsignada.fechaAsignacion)}
+                          </small>
+                        </div>
+                      )}
+                      
+                      {/* Selector de brigada */}
+                      <select 
+                        className="brigada-selector"
+                        value={reporteSeleccionado.brigadaAsignada?.id || ''}
+                        onChange={(e) => {
+                          if (e.target.value === '') {
+                            // Si selecciona "Sin asignar", desasignar
+                            if (reporteSeleccionado.brigadaAsignada) {
+                              desasignarReporte(reporteSeleccionado);
+                            }
+                          } else {
+                            // Si selecciona una brigada, asignar
+                            asignarBrigadaReporte(reporteSeleccionado.id, e.target.value);
+                          }
+                        }}
+                        disabled={asignandoBrigada}
+                      >
+                        <option value="">Sin asignar</option>
+                        {brigadasDisponibles.map(brigada => (
+                          <option key={brigada.id} value={brigada.id}>
+                            {brigada.nombre} ({brigada.tipo === 'basura' ? 'Basura' : 'Mixta'})
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {asignandoBrigada && (
+                        <span className="brigada-cargando">
+                          <i className="fas fa-spinner fa-spin"></i> Actualizando brigada...
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
@@ -669,9 +884,26 @@ const ReportesBasura = () => {
         </div>
       )}
       
-      {/* Estilos para el mensaje de éxito */}
+      {/* Estilos adicionales para la funcionalidad de brigadas */}
       <style jsx>
         {`
+          .mensaje-exito-global {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            border: 1px solid #c3e6cb;
+          }
+          
+          .mensaje-exito-global i {
+            margin-right: 10px;
+            font-size: 18px;
+          }
+          
           .mensaje-exito {
             background-color: #d4edda;
             color: #155724;
@@ -688,14 +920,101 @@ const ReportesBasura = () => {
             font-size: 18px;
           }
           
-          .estado-cargando {
+          .estado-cargando,
+          .brigada-cargando {
             margin-left: 10px;
             font-size: 14px;
             color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
           }
           
-          .estado-cargando i {
-            margin-right: 5px;
+          .report-brigada-asignada {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #059669;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            background: #f0fdf4;
+            border-radius: 6px;
+            border: 1px solid #bbf7d0;
+            margin-top: 8px;
+          }
+          
+          .report-brigada-asignada i {
+            color: #059669;
+          }
+          
+          .btn-desasignar-mini {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            margin-left: auto;
+            transition: all 0.3s;
+          }
+          
+          .btn-desasignar-mini:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.1);
+          }
+          
+          .brigada-asignada-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background: #f0fdf4;
+            border-radius: 6px;
+            border: 1px solid #bbf7d0;
+          }
+          
+          .brigada-asignada-info i {
+            color: #059669;
+          }
+          
+          .fecha-asignacion {
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin-left: auto;
+          }
+          
+          .brigada-selector {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            width: 100%;
+            transition: all 0.3s;
+            background: white;
+          }
+          
+          .brigada-selector:focus {
+            outline: none;
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+          }
+          
+          .brigada-selector:disabled {
+            background: #f9fafb;
+            color: #6b7280;
+            cursor: not-allowed;
+          }
+          
+          .brigada-selector option {
+            padding: 8px;
           }
         `}
       </style>

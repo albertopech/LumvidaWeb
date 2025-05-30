@@ -1,18 +1,9 @@
 // src/controllers/agregarReporte.js
 import { db } from '../models/firebase';
-import { 
-    collection, 
-    addDoc, 
-    getDocs, 
-    getDoc,
-    doc, 
-    updateDoc, 
-    serverTimestamp,
-    query,
-    where
+import { collection, addDoc, getDocs, getDoc, doc, updateDoc, serverTimestamp, query, where
 } from 'firebase/firestore';
 
-// Usa export default en lugar de una clase exportada
+// se usa export default en lugar de una clase exportada
 const ReporteController = {
     // Generar un folio único para el reporte
     generarFolio: () => {
@@ -58,7 +49,7 @@ const ReporteController = {
         };
     },
     
-    // Registrar un nuevo reporte en Firestore
+    // Registrar un nuevo reporte en Firestore - CORREGIDO PARA FORMATO DE FECHA
     registrarReporte: async (formData) => {
         try {
             // Obtener información del usuario actual
@@ -68,19 +59,26 @@ const ReporteController = {
             // Referencia a la colección "reportes"
             const reportesRef = collection(db, "reportes");
             
+            // Asegurar que la fecha tiene el formato correcto
+            let fecha = formData.fecha;
+            if (typeof fecha === 'string' && !fecha.includes('T')) {
+                // Si no tiene formato ISO, convertirlo
+                fecha = new Date(fecha).toISOString();
+            }
+            
             // Preparar los datos para Firestore
             const reporteData = {
                 folio: formData.folio,
-                categoria: formData.categoria,
+                categoria: formData.categoria, // Nombre completo de la categoría
                 direccion: formData.direccion,
                 ubicacion: formData.ubicacion || null,
-                fecha: formData.fecha,
+                fecha: fecha, // Formato ISO con fecha y hora
                 comentario: formData.comentario || "",
                 // Siempre establecer como pendiente al crear un nuevo reporte
                 estado: "pendiente",
                 usuarioId: usuarioId, // ID del usuario que creó el reporte
                 nombreUsuario: nombreUsuario, // Nombre del usuario que creó el reporte
-                fechaCreacion: serverTimestamp()
+                fechaCreacion: serverTimestamp() // Timestamp de Firebase
             };
             
             // Añadir documento a Firestore
@@ -109,6 +107,7 @@ const ReporteController = {
     },
     
     // Obtener reportes filtrados por usuario actual sin ordenar (para evitar error de índice)
+    // CORREGIDO PARA FORMATEAR FECHAS CORRECTAMENTE
     obtenerReportes: async () => {
         try {
             // Obtener ID del usuario actual
@@ -136,14 +135,54 @@ const ReporteController = {
             const reportes = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                // Convertir la fecha de timestamp a string si existe
+                // Convertir la fecha de timestamp a string si existe - FORMATO MEJORADO
                 if (data.fechaCreacion) {
                     try {
                         const fecha = data.fechaCreacion.toDate();
-                        data.fechaCreacionStr = fecha.toLocaleDateString();
+                        // Usar formato más completo con fecha y hora
+                        data.fechaCreacionStr = fecha.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun' // Zona horaria para Quintana Roo
+                        });
                     } catch (error) {
                         console.error("Error al convertir timestamp:", error);
                         data.fechaCreacionStr = "Fecha no disponible";
+                    }
+                }
+                
+                // Formatear la fecha normal si existe - NUEVO
+                if (data.fecha) {
+                    try {
+                        let fechaObj;
+                        // Verificar si la fecha es un string en formato ISO o un objeto Date
+                        if (typeof data.fecha === 'string') {
+                            fechaObj = new Date(data.fecha);
+                        } else if (data.fecha.toDate) { 
+                            // Si es un timestamp de Firestore
+                            fechaObj = data.fecha.toDate();
+                        } else {
+                            fechaObj = new Date(data.fecha);
+                        }
+                        
+                        data.fechaStr = fechaObj.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun' // Zona horaria para Quintana Roo
+                        });
+                    } catch (error) {
+                        console.error("Error al formatear fecha:", error);
+                        data.fechaStr = "Fecha no disponible";
                     }
                 }
                 
@@ -176,7 +215,7 @@ const ReporteController = {
         }
     },
     
-    // Obtener todos los reportes (solo para administradores)
+    // Obtener todos los reportes (solo para administradores) - CORREGIDO FORMATO DE FECHA
     obtenerTodosReportes: async () => {
         try {
             const reportesRef = collection(db, "reportes");
@@ -186,12 +225,79 @@ const ReporteController = {
             const reportes = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
+                
+                // Formatear fechaCreacion
                 if (data.fechaCreacion) {
                     try {
                         const fecha = data.fechaCreacion.toDate();
-                        data.fechaCreacionStr = fecha.toLocaleDateString();
+                        data.fechaCreacionStr = fecha.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun'
+                        });
                     } catch (error) {
                         data.fechaCreacionStr = "Fecha no disponible";
+                    }
+                }
+                
+                // Formatear la fecha normal
+                if (data.fecha) {
+                    try {
+                        let fechaObj;
+                        if (typeof data.fecha === 'string') {
+                            fechaObj = new Date(data.fecha);
+                        } else if (data.fecha.toDate) {
+                            fechaObj = data.fecha.toDate();
+                        } else {
+                            fechaObj = new Date(data.fecha);
+                        }
+                        
+                        data.fechaStr = fechaObj.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun'
+                        });
+                    } catch (error) {
+                        console.error("Error al formatear fecha:", error);
+                        data.fechaStr = "Fecha no disponible";
+                    }
+                }
+                
+                // Formatear fechaResolucion si existe - NUEVO
+                if (data.fechaResolucion) {
+                    try {
+                        let fechaObj;
+                        if (typeof data.fechaResolucion === 'string') {
+                            fechaObj = new Date(data.fechaResolucion);
+                        } else if (data.fechaResolucion.toDate) {
+                            fechaObj = data.fechaResolucion.toDate();
+                        } else {
+                            fechaObj = new Date(data.fechaResolucion);
+                        }
+                        
+                        data.fechaResolucionStr = fechaObj.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun'
+                        });
+                    } catch (error) {
+                        console.error("Error al formatear fecha de resolución:", error);
+                        data.fechaResolucionStr = "Fecha no disponible";
                     }
                 }
                 
@@ -224,7 +330,7 @@ const ReporteController = {
         }
     },
     
-    // Obtener reportes agrupados por categoría (para dashboard)
+    // Obtener reportes agrupados por categoría (para dashboard) - ACTUALIZADO CON NUEVAS CATEGORÍAS
     obtenerReportesAgrupados: async () => {
         try {
             // Primero obtenemos todos los reportes sin ordenamiento en Firestore
@@ -239,7 +345,15 @@ const ReporteController = {
                 if (data.fechaCreacion) {
                     try {
                         const fecha = data.fechaCreacion.toDate();
-                        data.fechaCreacionStr = fecha.toLocaleDateString();
+                        data.fechaCreacionStr = fecha.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun'
+                        });
                     } catch (error) {
                         data.fechaCreacionStr = "Fecha no disponible";
                     }
@@ -262,8 +376,8 @@ const ReporteController = {
             const reportesPorCategoria = {};
             const reportesPorEstado = {};
             
-            // Inicializar categorías
-            const categorias = ["basura", "alumbrado", "drenaje", "bacheo"];
+            // Inicializar categorías CON NOMBRES COMPLETOS
+            const categorias = ["Basura Acumulada", "Alumbrado Público", "Drenajes Obstruidos", "Bacheo"];
             categorias.forEach(cat => {
                 reportesPorCategoria[cat] = 0;
             });
@@ -279,6 +393,28 @@ const ReporteController = {
                 // Contar por categoría
                 if (reporte.categoria && reportesPorCategoria[reporte.categoria] !== undefined) {
                     reportesPorCategoria[reporte.categoria]++;
+                } else if (reporte.categoria) {
+                    // Si la categoría no está en nuestras categorías predefinidas, 
+                    // podríamos estar tratando con categorías antiguas
+                    
+                    // Mapeo de categorías antiguas a nuevas (si es necesario)
+                    const mapeoCategoriasAntiguas = {
+                        "basura": "Basura Acumulada",
+                        "alumbrado": "Alumbrado Público",
+                        "drenaje": "Drenajes Obstruidos",
+                        "bacheo": "Bacheo"
+                    };
+                    
+                    const categoriaCorrecta = mapeoCategoriasAntiguas[reporte.categoria];
+                    if (categoriaCorrecta && reportesPorCategoria[categoriaCorrecta] !== undefined) {
+                        reportesPorCategoria[categoriaCorrecta]++;
+                    } else {
+                        // Si no podemos mapear, agregar como "Otra"
+                        if (!reportesPorCategoria["Otra"]) {
+                            reportesPorCategoria["Otra"] = 0;
+                        }
+                        reportesPorCategoria["Otra"]++;
+                    }
                 }
                 
                 // Contar por estado
@@ -305,7 +441,7 @@ const ReporteController = {
         }
     },
     
-    // Obtener un reporte específico por ID
+    // Obtener un reporte específico por ID - CORREGIDO FORMATO DE FECHA
     obtenerReportePorId: async (reporteId) => {
         try {
             const reporteRef = doc(db, "reportes", reporteId);
@@ -318,10 +454,75 @@ const ReporteController = {
                 if (reporteData.fechaCreacion) {
                     try {
                         const fecha = reporteData.fechaCreacion.toDate();
-                        reporteData.fechaCreacionStr = fecha.toLocaleDateString();
+                        reporteData.fechaCreacionStr = fecha.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun'
+                        });
                     } catch (error) {
                         console.error("Error al convertir timestamp:", error);
                         reporteData.fechaCreacionStr = "Fecha no disponible";
+                    }
+                }
+                
+                // Formatear la fecha normal
+                if (reporteData.fecha) {
+                    try {
+                        let fechaObj;
+                        if (typeof reporteData.fecha === 'string') {
+                            fechaObj = new Date(reporteData.fecha);
+                        } else if (reporteData.fecha.toDate) {
+                            fechaObj = reporteData.fecha.toDate();
+                        } else {
+                            fechaObj = new Date(reporteData.fecha);
+                        }
+                        
+                        reporteData.fechaStr = fechaObj.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun'
+                        });
+                    } catch (error) {
+                        console.error("Error al formatear fecha:", error);
+                        reporteData.fechaStr = "Fecha no disponible";
+                    }
+                }
+                
+                // Formatear fechaResolucion si existe
+                if (reporteData.fechaResolucion) {
+                    try {
+                        let fechaObj;
+                        if (typeof reporteData.fechaResolucion === 'string') {
+                            fechaObj = new Date(reporteData.fechaResolucion);
+                        } else if (reporteData.fechaResolucion.toDate) {
+                            fechaObj = reporteData.fechaResolucion.toDate();
+                        } else {
+                            fechaObj = new Date(reporteData.fechaResolucion);
+                        }
+                        
+                        reporteData.fechaResolucionStr = fechaObj.toLocaleString('es-MX', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true,
+                            timeZone: 'America/Cancun'
+                        });
+                    } catch (error) {
+                        console.error("Error al formatear fecha de resolución:", error);
+                        reporteData.fechaResolucionStr = "Fecha no disponible";
                     }
                 }
                 
@@ -362,7 +563,7 @@ const ReporteController = {
         }
     },
     
-    // Actualizar un reporte existente
+    // Actualizar un reporte existente - CORREGIDO PARA FORMATO DE FECHA
     actualizarReporte: async (reporteData) => {
         try {
             // Validar que exista ID del reporte
@@ -401,15 +602,27 @@ const ReporteController = {
                 }
             }
             
+            // Asegurar que la fecha tiene el formato correcto
+            let fecha = reporteData.fecha;
+            if (typeof fecha === 'string' && !fecha.includes('T')) {
+                // Si no tiene formato ISO, convertirlo
+                fecha = new Date(fecha).toISOString();
+            }
+            
             // Extraer los campos que se actualizarán
             const datosActualizados = {
                 categoria: reporteData.categoria,
                 direccion: reporteData.direccion,
                 estado: reporteData.estado,
-                fecha: reporteData.fecha,
+                fecha: fecha,
                 comentario: reporteData.comentario || "",
                 fechaActualizacion: serverTimestamp()
             };
+            
+            // Si el estado cambia a "resuelto", añadir la fecha de resolución
+            if (reporteData.estado === 'resuelto' && reporteActual.estado !== 'resuelto') {
+                datosActualizados.fechaResolucion = serverTimestamp();
+            }
             
             // Incluir la ubicación si existe en los datos enviados
             if (reporteData.ubicacion) {

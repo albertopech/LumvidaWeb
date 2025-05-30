@@ -223,3 +223,14 @@
     color: #6b7280;
     margin: 0;
   }
+/* Nuevo mensaje de error simplificado */
+.error-container-simple {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: #fee2e2;
+  border-radius: 0.25rem;
+  color: #ef4444;
+  font-size: 0.875rem;
+  text-align: center;
+  font-weight: 500;
+}

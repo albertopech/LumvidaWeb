@@ -1,0 +1,757 @@
+/* src/views/Styles/gestionBrigadas.css */
+
+.gestion-brigadas-container {
+  padding: 16px;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Header */
+.brigadas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.brigadas-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #1a202c;
+  font-weight: 600;
+}
+
+.btn-nueva-brigada {
+  background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(76, 81, 191, 0.2);
+}
+
+.btn-nueva-brigada:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(76, 81, 191, 0.3);
+}
+
+/* Mensajes */
+.mensaje {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.mensaje.error {
+  background-color: #fed7d7;
+  color: #c53030;
+  border-left: 4px solid #e53e3e;
+}
+
+.mensaje.success {
+  background-color: #c6f6d5;
+  color: #276749;
+  border-left: 4px solid #38a169;
+}
+
+/* Filtros */
+.filtros-container {
+  background: #f7fafc;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.filtros-form {
+  display: flex;
+  gap: 14px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.filtro-grupo label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.filtro-grupo select {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background: white;
+  color: #2d3748;
+}
+
+.btn-limpiar-filtros {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-limpiar-filtros:hover {
+  background: #cbd5e0;
+}
+
+/* Grid de brigadas */
+.brigadas-content {
+  min-height: 400px;
+}
+
+.brigadas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* Tarjeta de brigada */
+.brigada-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.brigada-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.brigada-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.brigada-nombre {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.estado-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-badge.activa {
+  background: #c6f6d5;
+  color: #276749;
+}
+
+.estado-badge.en-mision {
+  background: #fef5e7;
+  color: #d69e2e;
+}
+
+.estado-badge.inactiva {
+  background: #fed7d7;
+  color: #c53030;
+}
+
+.estado-badge.mantenimiento {
+  background: #e6fffa;
+  color: #319795;
+}
+
+.brigada-card-body {
+  padding: 16px;
+}
+
+.brigada-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.info-item i {
+  width: 14px;
+  color: #718096;
+}
+
+.brigada-descripcion {
+  margin: 12px 0;
+  padding: 10px;
+  background: #f7fafc;
+  border-radius: 4px;
+  border-left: 3px solid #4c51bf;
+}
+
+.brigada-descripcion p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #4a5568;
+  line-height: 1.4;
+}
+
+.brigada-miembros {
+  margin-top: 14px;
+}
+
+.brigada-miembros h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.miembros-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.miembro-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 0.75rem;
+}
+
+.miembro-nombre {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.miembro-rol {
+  color: #718096;
+}
+
+.lider-badge {
+  background: #4c51bf;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.miembros-mas {
+  font-size: 0.75rem;
+  color: #718096;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.brigada-card-footer {
+  padding: 12px 16px;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.acciones-principales {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-editar,
+.btn-ver-reportes {
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  border: 1px solid;
+}
+
+.btn-editar {
+  background: #e6fffa;
+  color: #319795;
+  border-color: #81e6d9;
+}
+
+.btn-editar:hover {
+  background: #b2f5ea;
+}
+
+.btn-ver-reportes {
+  background: #e6f3ff;
+  color: #3182ce;
+  border-color: #90cdf4;
+}
+
+.btn-ver-reportes:hover {
+  background: #bee3f8;
+}
+
+.acciones-secundarias {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.estado-selector {
+  padding: 4px 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  background: white;
+}
+
+.btn-eliminar {
+  background: #fed7d7;
+  color: #c53030;
+  border: 1px solid #feb2b2;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-eliminar:hover {
+  background: #feb2b2;
+}
+
+/* Estado sin brigadas */
+.no-brigadas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.no-brigadas-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  color: #cbd5e0;
+}
+
+.no-brigadas h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #4a5568;
+}
+
+.no-brigadas p {
+  margin: 0 0 20px 0;
+  font-size: 0.9rem;
+  max-width: 400px;
+}
+
+.btn-crear-primera {
+  background: #4c51bf;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-crear-primera:hover {
+  background: #434190;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #718096;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #4c51bf;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.btn-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #718096;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-cerrar:hover {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f7fafc;
+}
+
+/* Formulario */
+.brigada-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.form-section h4 {
+  margin: 0 0 14px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.btn-agregar-miembro {
+  background: #e6f3ff;
+  color: #3182ce;
+  border: 1px solid #90cdf4;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-agregar-miembro:hover {
+  background: #bee3f8;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background: white;
+  color: #2d3748;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4c51bf;
+  box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.1);
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Miembros */
+.sin-miembros {
+  text-align: center;
+  padding: 20px;
+  color: #718096;
+  font-size: 0.85rem;
+  background: #f7fafc;
+  border-radius: 4px;
+  border: 1px dashed #cbd5e0;
+}
+
+.miembros-form-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.miembro-form-item {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.miembro-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.miembro-numero {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.btn-eliminar-miembro {
+  background: #fed7d7;
+  color: #c53030;
+  border: 1px solid #feb2b2;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: all 0.2s ease;
+}
+
+.btn-eliminar-miembro:hover {
+  background: #feb2b2;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #4a5568;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.checkmark {
+  font-weight: 500;
+}
+
+/* Botones del modal */
+.btn-cancelar,
+.btn-guardar {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid;
+}
+
+.btn-cancelar {
+  background: #f7fafc;
+  color: #4a5568;
+  border-color: #cbd5e0;
+}
+
+.btn-cancelar:hover {
+  background: #e2e8f0;
+}
+
+.btn-guardar {
+  background: #4c51bf;
+  color: white;
+  border-color: #4c51bf;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  background: #434190;
+}
+
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gestion-brigadas-container {
+    padding: 12px;
+  }
+  
+  .brigadas-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .filtros-form {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filtro-grupo {
+    min-width: auto;
+  }
+  
+  .brigadas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-container {
+    max-width: 95%;
+    margin: 10px;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .brigada-card-footer {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  
+  .acciones-principales,
+  .acciones-secundarias {
+    justify-content: center;
+  }
+}

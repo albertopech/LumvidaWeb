@@ -1,8 +1,8 @@
-// src/views/PanelLateral.jsx - Versión corregida
+// src/views/PanelLateral.jsx - Versión actualizada con Gestión de Brigadas
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./Styles/PanelLateral.css";
-// Importar componentes
+// Importar componentes existentes
 import RegistroUsuarios from '../views/RegistroUsuarios';
 import AgregarReporte from '../views/AgregarReporte';
 import Estadisticas from '../views/Estadisticas';
@@ -13,8 +13,9 @@ import ReportesDrenaje from '../views/ReportesDrenaje';
 import AdminUsuarios from '../views/AdminUsuarios';
 import GestionReportes from '../views/GestionReportes';
 import GestionPermisos from '../views/GestionPermisos';
-// Nuevos componentes para el jefe de departamento
 import DashboardJefeDepartamento from '../views/DashboardJefeDepartamento';
+// Importar nuevo componente de brigadas
+import GestionBrigadas from '../views/GestionBrigadas';
 
 // Importar controlador de permisos
 import { PermisosController } from '../controllers/PermisosController';
@@ -45,16 +46,17 @@ const PanelLateral = () => {
     home: '🏠',
     users: '👥',
     analytics: '📊',
-    report: '📝',  // Icono para reportes
+    report: '📝',
     bell: '🔔',
     search: '🔍',
     logout: '🚪',
     menu: '☰',
-    permisos: '🔑',  // Icono para gestión de permisos
-    dashboard: '📉',  // Icono para dashboard avanzado
-    map: '🗺️',       // Icono para mapa
-    message: '✉️',    // Icono para mensajes
-    advanced: '📋'    // Icono para reportes avanzados
+    permisos: '🔑',
+    dashboard: '📉',
+    map: '🗺️',
+    message: '✉️',
+    advanced: '📋',
+    brigadas: '👷‍♂️' // Nuevo icono para brigadas
   };
 
   // Cargar información del usuario y sus permisos al iniciar
@@ -115,9 +117,6 @@ const PanelLateral = () => {
           if (permisosResponse.success) {
             setModulosPermitidos(permisosResponse.data || []);
             
-            // CORRECCIÓN: Solo establecer el activeItem por primera vez
-            // Usamos la bandera usuarioYaInicializado para evitar cambiar el activeItem
-            // cada vez que se recarga el componente
             if (!usuarioYaInicializado) {
               // Para jefes de departamento, iniciar en el dashboard de jefe si está disponible
               if (rol === 'jefe_departamento' && permisosResponse.data.includes('dashboard_jefe')) {
@@ -185,10 +184,9 @@ const PanelLateral = () => {
   }, [navigate, activeItem, usuarioYaInicializado]);
 
   const handleItemClick = (id) => {
-    // CORRECCIÓN: Verificar que el módulo esté disponible antes de cambiar
+    // Verificar que el módulo esté disponible antes de cambiar
     if (modulosPermitidos.includes(id)) {
       setActiveItem(id);
-      // Añadir un console.log para debug
       console.log("Cambiando a módulo:", id);
     } else {
       console.warn("Módulo no disponible:", id);
@@ -222,7 +220,7 @@ const PanelLateral = () => {
     }
   };
 
-  // Items del menú completo
+  // Items del menú completo - ACTUALIZADO CON BRIGADAS
   const allMenuItems = [
     { id: 'dashboard', icon: icons.home, label: 'Panel Administrativo' },
     { id: 'dashboard_jefe', icon: icons.dashboard, label: 'Dashboard Departamentos' },
@@ -232,6 +230,7 @@ const PanelLateral = () => {
     { id: 'analytics', icon: icons.analytics, label: 'Estadísticas' },
     { id: 'admin_users', icon: icons.users, label: 'Admin. Usuarios' },
     { id: 'admin_permisos', icon: icons.permisos, label: 'Gestión de Permisos' },
+    { id: 'admin_brigadas', icon: icons.brigadas, label: 'Gestión de Brigadas' }, // NUEVO ITEM
   ];
 
   // Filtrar menú según los módulos permitidos
@@ -257,7 +256,6 @@ const PanelLateral = () => {
 
   // Renderiza el contenido según la opción seleccionada y el rol del usuario
   const renderContent = () => {
-    // CORRECCIÓN: Agregar un console.log para ver qué opción está activa
     console.log("Renderizando contenido con activeItem:", activeItem);
     
     // Verificar si el usuario tiene permiso para ver esta sección
@@ -268,8 +266,8 @@ const PanelLateral = () => {
       }
       return (
         <div className="unauthorized-message">
-          <h3>Acceso no autorizado</h3>
-          <p>No tienes permisos para acceder a esta sección.</p>
+          <div className="unauthorized-content">
+          </div>
         </div>
       );
     }
@@ -287,7 +285,6 @@ const PanelLateral = () => {
           return <ReportesDrenaje />;
         default:
           // Para otros roles (admin, jefe_departamento, etc.) mostrar el panel de basura como predeterminado
-          // o puedes implementar un dashboard general con resumen de todos los reportes
           return <ReportesBasura />;
       }
     }
@@ -306,10 +303,10 @@ const PanelLateral = () => {
         return <GestionReportes />;
       case 'admin_permisos':
         return <GestionPermisos />;
-      // Nuevas vistas para el Jefe de Departamento
+      case 'admin_brigadas':  // NUEVO CASO PARA BRIGADAS
+        return <GestionBrigadas />;
       case 'dashboard_jefe':
         return <DashboardJefeDepartamento />;
-      case 'mapa_reportes':
       default:
         return (
           <div className="content-card">
@@ -322,108 +319,107 @@ const PanelLateral = () => {
 
   return (
     <div className="app-container light-mode">
-    <button 
-      className="mobile-toggle"
-      onClick={toggleMobileSidebar}
-    >
-      {icons.menu}
-    </button>
+      <button 
+        className="mobile-toggle"
+        onClick={toggleMobileSidebar}
+      >
+        {icons.menu}
+      </button>
 
-    <div 
-      className={`sidebar ${expanded ? 'expanded' : 'collapsed'} ${showSidebar ? 'show' : 'hide'}`}
-    >
-      <div className="sidebar-header">
-        {expanded && (
-          <div className="app-title">
-            ☀️ Panel Administrativo
-          </div>
-        )}
-        <button 
-          className="toggle-button"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? icons.chevronLeft : icons.chevronRight}
-        </button>
-      </div>
-
-      <div className={`notifications-container ${expanded ? '' : 'hidden'}`}>
-        <div className="notifications-box">
-          <div className="notifications-title">
-            <span className="notification-icon">{icons.bell}</span>
-            <span className="notification-label">Notificaciones</span>
-          </div>
-          <div className="notification-badge">5</div>
-        </div>
-      </div>
-
-      <nav className="sidebar-menu">
-        {loading ? (
-          <div className="loading-menu">
-            <div className="loading-spinner"></div>
-            <span>Cargando...</span>
-          </div>
-        ) : (
-          <ul className="menu-list">
-            {menuItems.map((item) => (
-              <li key={item.id} className="menu-item">
-                <button
-                  onClick={() => handleItemClick(item.id)}
-                  className={`menu-button ${activeItem === item.id ? 'active' : ''}`}
-                >
-                  <span className="menu-icon">
-                    {item.icon}
-                  </span>
-                  {expanded && <span className="menu-label">{item.label}</span>}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </nav>
-
-      <div className="user-profile">
-        <div className="profile-container">
-          <div className="profile-avatar">{currentUser.iniciales}</div>
+      <div 
+        className={`sidebar ${expanded ? 'expanded' : 'collapsed'} ${showSidebar ? 'show' : 'hide'}`}
+      >
+        <div className="sidebar-header">
           {expanded && (
-            <div className="profile-info">
-              <div className="profile-name">{currentUser.nombre}</div>
-              <div className="profile-email">
-                {currentUser.email !== currentUser.nombre ? currentUser.email : ''}
-              </div>
-              <div className="profile-role">
-                {getRoleName(currentUser.rol)}
-              </div>
+            <div className="app-title">
+              ☀️ Panel Administrativo
             </div>
+          )}
+          <button 
+            className="toggle-button"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? icons.chevronLeft : icons.chevronRight}
+          </button>
+        </div>
+
+        <div className={`notifications-container ${expanded ? '' : 'hidden'}`}>
+          <div className="notifications-box">
+            <div className="notifications-title">
+              <span className="notification-icon">{icons.bell}</span>
+              <span className="notification-label">Notificaciones</span>
+            </div>
+            <div className="notification-badge">5</div>
+          </div>
+        </div>
+
+        <nav className="sidebar-menu">
+          {loading ? (
+            <div className="loading-menu">
+              <span>Cargando...</span>
+            </div>
+          ) : (
+            <ul className="menu-list">
+              {menuItems.map((item) => (
+                <li key={item.id} className="menu-item">
+                  <button
+                    onClick={() => handleItemClick(item.id)}
+                    className={`menu-button ${activeItem === item.id ? 'active' : ''}`}
+                  >
+                    <span className="menu-icon">
+                      {item.icon}
+                    </span>
+                    {expanded && <span className="menu-label">{item.label}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </nav>
+
+        <div className="user-profile">
+          <div className="profile-container">
+            <div className="profile-avatar">{currentUser.iniciales}</div>
+            {expanded && (
+              <div className="profile-info">
+                <div className="profile-name">{currentUser.nombre}</div>
+                <div className="profile-email">
+                  {currentUser.email !== currentUser.nombre ? currentUser.email : ''}
+                </div>
+                <div className="profile-role">
+                  {getRoleName(currentUser.rol)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="sidebar-footer">
+          {expanded ? (
+            <button className="logout-button with-text" onClick={handleLogout}>
+              <span className="logout-icon">{icons.logout}</span>
+              <span className="logout-text">Cerrar Sesión</span>
+            </button>
+          ) : (
+            <button className="logout-button" onClick={handleLogout}>
+              <span className="logout-icon">{icons.logout}</span>
+            </button>
           )}
         </div>
       </div>
 
-      <div className="sidebar-footer">
-        {expanded ? (
-          <button className="logout-button with-text" onClick={handleLogout}>
-            <span className="logout-icon">{icons.logout}</span>
-            <span className="logout-text">Cerrar Sesión</span>
-          </button>
-        ) : (
-          <button className="logout-button" onClick={handleLogout}>
-            <span className="logout-icon">{icons.logout}</span>
-          </button>
-        )}
+      <div className="main-content">
+        <div className="content-container">
+          {renderContent()}
+        </div>
       </div>
     </div>
-
-    <div className="main-content">
-      <div className="content-container">
-        {renderContent()}
-      </div>
-    </div>
-  </div>
-);
+  );
 };
 
 // Función auxiliar para obtener el nombre del rol utilizando el controlador
 function getRoleName(rolId) {
-return PermisosController.obtenerNombreRol(rolId);
+  return PermisosController.obtenerNombreRol(rolId);
 }
 
 export default PanelLateral;

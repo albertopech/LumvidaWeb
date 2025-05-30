@@ -19,16 +19,16 @@
   
   font-family: 'Segoe UI', Arial, sans-serif;
   color: var(--text-color);
-  line-height: 1.6;
+  line-height: 1.4; /* Reducido de 1.6 */
 }
 
 /* Estilos para campos de entrada simplificados */
 .registro-component .full-input-field {
   width: 100%;
-  padding: 14px 16px;
+  padding: 10px 12px; /* Reducido de 14px 16px */
   border: 1px solid var(--input-border);
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 13px; /* Reducido de 16px */
   outline: none;
   background-color: #f9fafb;
   color: var(--text-color);
@@ -65,41 +65,41 @@
   background-color: var(--card-background);
   border-radius: 8px;
   box-shadow: var(--form-shadow);
-  padding: 40px;
+  padding: 30px; /* Reducido de 40px */
   border: 1px solid var(--border-color);
 }
 
 .registro-component .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 25px; /* Reducido de 30px */
   border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 15px;
+  padding-bottom: 12px; /* Reducido de 15px */
 }
 
 .registro-component .login-title {
-  font-size: 28px;
+  font-size: 22px; /* Reducido de 28px */
   font-weight: 600;
   color: var(--primary-color);
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reducido de 8px */
   letter-spacing: -0.5px;
 }
 
 .registro-component .login-subtitle {
   color: var(--light-text);
   margin-top: 0;
-  font-size: 16px;
+  font-size: 13px; /* Reducido de 16px */
 }
 
 .registro-component .login-form {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px; /* Reducido de 25px */
 }
 
 .registro-component .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px; /* Reducido de 20px */
 }
 
 .registro-component .input-group {
@@ -120,9 +120,9 @@
 
 .registro-component .error-container, 
 .registro-component .success-container {
-  margin-top: 20px;
+  margin-top: 16px; /* Reducido de 20px */
   border-radius: 4px;
-  padding: 16px;
+  padding: 12px; /* Reducido de 16px */
 }
 
 .registro-component .error-container {
@@ -139,7 +139,7 @@
 .registro-component .success-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px; /* Reducido de 12px */
 }
 
 .registro-component .error-icon, 
@@ -152,8 +152,8 @@
 
 .registro-component .error-icon svg, 
 .registro-component .success-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 18px; /* Reducido de 22px */
+  height: 18px; /* Reducido de 22px */
 }
 
 .registro-component .error-icon svg {
@@ -172,11 +172,11 @@
 .registro-component .error-message p, 
 .registro-component .success-message p {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px; /* Reducido de 15px */
 }
 
 .registro-component .button-container {
-  margin-top: 30px;
+  margin-top: 24px; /* Reducido de 30px */
 }
 
 .registro-component .login-button, 
@@ -184,14 +184,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px; /* Reducido de 10px */
   width: 100%;
-  padding: 14px;
+  padding: 12px; /* Reducido de 14px */
   background-color: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 14px; /* Reducido de 16px */
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.1s;
@@ -227,14 +227,14 @@
 }
 
 .registro-component .button-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px; /* Reducido de 20px */
+  height: 16px; /* Reducido de 20px */
 }
 
 .registro-component .loading-icon {
   animation: spin 1s linear infinite;
-  width: 20px;
-  height: 20px;
+  width: 16px; /* Reducido de 20px */
+  height: 16px; /* Reducido de 20px */
 }
 
 @keyframes spin {
@@ -252,12 +252,12 @@
 
 .registro-component .login-footer, 
 .registro-component .registro-footer {
-  margin-top: 40px;
+  margin-top: 30px; /* Reducido de 40px */
   text-align: center;
   color: var(--light-text);
-  font-size: 14px;
+  font-size: 12px; /* Reducido de 14px */
   border-top: 1px solid var(--border-color);
-  padding-top: 20px;
+  padding-top: 16px; /* Reducido de 20px */
 }
 
 /* Estilos para el registro de usuarios */
@@ -266,56 +266,56 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 40px 20px;
+  padding: 30px 20px; /* Reducido de 40px 20px */
   background-color: #f3f4f6;
 }
 
 /* Ajuste para cuando se integra con el panel lateral */
 .main-content .registro-component .registro-container {
   min-height: unset;
-  padding: 20px 0;
+  padding: 16px 0; /* Reducido de 20px 0 */
   background-color: transparent;
 }
 
 .registro-component .registro-card {
   width: 100%;
-  max-width: 850px;
+  max-width: 750px; /* Reducido de 850px */
   background-color: var(--card-background);
   border-radius: 8px;
   box-shadow: var(--form-shadow);
-  padding: 40px;
+  padding: 30px; /* Reducido de 40px */
   border: 1px solid var(--border-color);
 }
 
 .registro-component .registro-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px; /* Reducido de 30px */
   border-bottom: 2px solid var(--primary-color);
-  padding-bottom: 15px;
+  padding-bottom: 12px; /* Reducido de 15px */
 }
 
 .registro-component .registro-title {
-  font-size: 28px;
+  font-size: 22px; /* Reducido de 28px */
   font-weight: 600;
   color: var(--primary-color);
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reducido de 8px */
   letter-spacing: -0.5px;
 }
 
 .registro-component .registro-subtitle {
   color: var(--light-text);
   margin-top: 0;
-  font-size: 16px;
+  font-size: 13px; /* Reducido de 16px */
 }
 
 .registro-component .registro-form {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 24px; /* Reducido de 30px */
 }
 
 .registro-component .form-section {
-  padding: 25px;
+  padding: 20px; /* Reducido de 25px */
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background-color: #f9fafb;
@@ -324,31 +324,31 @@
 
 .registro-component .form-section h3 {
   margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 18px;
+  margin-bottom: 16px; /* Reducido de 20px */
+  font-size: 16px; /* Reducido de 18px */
   font-weight: 600;
   color: var(--primary-color);
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
+  padding-bottom: 8px; /* Reducido de 10px */
   letter-spacing: 0.3px;
 }
 
 .registro-component .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 16px; /* Reducido de 20px */
 }
 
 .registro-component .form-group label {
   display: block;
-  font-size: 15px;
+  font-size: 13px; /* Reducido de 15px */
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reducido de 8px */
   color: var(--text-color);
 }
 
 .registro-component .form-row {
   display: flex;
-  gap: 20px;
-  margin-bottom: 5px;
+  gap: 16px; /* Reducido de 20px */
+  margin-bottom: 4px; /* Reducido de 5px */
 }
 
 .registro-component .form-row .form-group {
@@ -358,11 +358,11 @@
 @media (max-width: 768px) {
   .registro-component .form-row {
     flex-direction: column;
-    gap: 10px;
+    gap: 8px; /* Reducido de 10px */
   }
   
   .registro-component .registro-card {
-    padding: 25px;
+    padding: 20px; /* Reducido de 25px */
   }
 }
 
@@ -373,20 +373,20 @@
 }
 
 .registro-component .sidebar {
-  width: 280px;
+  width: 260px; /* Reducido de 280px */
   background-color: #1e3a8a;
   color: white;
-  padding: 25px 20px;
+  padding: 20px 16px; /* Reducido de 25px 20px */
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .registro-component .sidebar-header {
-  margin-bottom: 30px;
+  margin-bottom: 24px; /* Reducido de 30px */
 }
 
 .registro-component .sidebar-title {
-  font-size: 20px;
-  margin-bottom: 5px;
+  font-size: 18px; /* Reducido de 20px */
+  margin-bottom: 4px; /* Reducido de 5px */
   font-weight: 600;
   letter-spacing: 0.5px;
 }
@@ -394,22 +394,22 @@
 .registro-component .user-info {
   display: flex;
   align-items: center;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
+  margin-bottom: 20px; /* Reducido de 25px */
+  padding-bottom: 16px; /* Reducido de 20px */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .registro-component .user-avatar {
-  width: 45px;
-  height: 45px;
+  width: 40px; /* Reducido de 45px */
+  height: 40px; /* Reducido de 45px */
   border-radius: 50%;
   background-color: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 15px;
+  margin-right: 12px; /* Reducido de 15px */
   font-weight: bold;
-  font-size: 18px;
+  font-size: 16px; /* Reducido de 18px */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
@@ -419,12 +419,12 @@
 
 .registro-component .user-name {
   font-weight: 600;
-  margin-bottom: 3px;
-  font-size: 16px;
+  margin-bottom: 2px; /* Reducido de 3px */
+  font-size: 14px; /* Reducido de 16px */
 }
 
 .registro-component .user-role {
-  font-size: 13px;
+  font-size: 11px; /* Reducido de 13px */
   opacity: 0.9;
 }
 
@@ -435,17 +435,18 @@
 }
 
 .registro-component .menu-item {
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reducido de 8px */
 }
 
 .registro-component .menu-link {
   display: flex;
   align-items: center;
-  padding: 12px 15px;
+  padding: 10px 12px; /* Reducido de 12px 15px */
   border-radius: 6px;
   color: white;
   text-decoration: none;
   transition: all 0.3s;
+  font-size: 13px; /* Añadido para reducir tamaño */
 }
 
 .registro-component .menu-link:hover {
@@ -459,7 +460,7 @@
 }
 
 .registro-component .menu-icon {
-  margin-right: 12px;
+  margin-right: 10px; /* Reducido de 12px */
   opacity: 0.9;
 }
 
@@ -470,7 +471,7 @@
 
 .registro-component .content {
   flex: 1;
-  padding: 30px;
+  padding: 24px; /* Reducido de 30px */
   background-color: #f8fafc;
 }
 
@@ -478,13 +479,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 35px;
-  padding-bottom: 15px;
+  margin-bottom: 28px; /* Reducido de 35px */
+  padding-bottom: 12px; /* Reducido de 15px */
   border-bottom: 1px solid #e2e8f0;
 }
 
 .registro-component .page-title {
-  font-size: 24px;
+  font-size: 20px; /* Reducido de 24px */
   font-weight: 600;
   margin: 0;
   color: #1e3a8a;
@@ -498,15 +499,16 @@
 .registro-component .logout-button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px; /* Reducido de 8px */
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 10px 16px;
+  padding: 8px 14px; /* Reducido de 10px 16px */
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 500;
   color: #475569;
+  font-size: 13px; /* Añadido para reducir tamaño */
 }
 
 .registro-component .logout-button:hover {
@@ -517,15 +519,15 @@
 
 .registro-component .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Reducido de 300px */
+  gap: 20px; /* Reducido de 25px */
 }
 
 .registro-component .card {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  padding: 25px;
+  padding: 20px; /* Reducido de 25px */
   border: 1px solid #e2e8f0;
   transition: all 0.3s;
 }
@@ -536,29 +538,29 @@
 }
 
 .registro-component .card-title {
-  font-size: 18px;
+  font-size: 16px; /* Reducido de 18px */
   font-weight: 600;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 16px; /* Reducido de 20px */
   color: var(--primary-color);
   border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 10px;
+  padding-bottom: 8px; /* Reducido de 10px */
 }
 
 .registro-component .card-content {
-  margin-bottom: 15px;
+  margin-bottom: 12px; /* Reducido de 15px */
 }
 
 .registro-component .stat-value {
-  font-size: 36px;
+  font-size: 30px; /* Reducido de 36px */
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reducido de 8px */
   color: var(--primary-color);
 }
 
 .registro-component .stat-label {
   color: var(--light-text);
-  font-size: 14px;
+  font-size: 12px; /* Reducido de 14px */
   font-weight: 500;
 }
 
@@ -570,10 +572,10 @@
   
   .registro-component .sidebar {
     width: 100%;
-    padding: 15px;
+    padding: 12px; /* Reducido de 15px */
   }
   
   .registro-component .content {
-    padding: 20px;
+    padding: 16px; /* Reducido de 20px */
   }
 }

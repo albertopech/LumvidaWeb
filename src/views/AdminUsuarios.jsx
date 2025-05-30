@@ -236,7 +236,6 @@ const AdminUsuarios = () => {
         <div className="admin-usuarios-container">
             <div className="admin-header">
                 <h2>Administración de Usuarios</h2>
-                <p>Gestiona los usuarios del sistema</p>
             </div>
             
             {/* Filtros y búsqueda */}

@@ -110,7 +110,6 @@ const RegistroUsuarios = () => {
                 <div className="registro-card">
                     <div className="registro-header">
                         <h2 className="registro-title">Registro de Usuarios</h2>
-                        <p className="registro-subtitle">Sistema de Administración de Reportes Urbanos</p>
                     </div>
                     
                     <form className="registro-form" onSubmit={handleSubmit}>
