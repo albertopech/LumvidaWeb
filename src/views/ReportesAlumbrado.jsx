@@ -1,10 +1,7 @@
-// src/views/ReportesAlumbrado.jsx
+// src/views/ReportesAlumbrado.jsx - FRONTEND COMPONENT
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../models/firebase';
-import { CATEGORIAS } from '../models/reporteModel';
+import { ReportesAlumbradoController } from '../controllers/ReportesAlumbradoController';
 import './Styles/reportes.css';
-import { jsPDF } from 'jspdf'; // Corrección: Importar como un objeto nombrado
 
 // Componente de etiqueta de estado
 const EstadoTag = ({ estado }) => {
@@ -64,113 +61,193 @@ const EstadoTag = ({ estado }) => {
 };
 
 const ReportesAlumbrado = () => {
+  // Estados del componente
   const [reportes, setReportes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actualizandoEstado, setActualizandoEstado] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
   const [mensajeExito, setMensajeExito] = useState(null);
-  
-  // Estados para filtros
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
-  const [ubicacion, setUbicacion] = useState({
-    ciudad: 'Chetumal, Q. Roo'
-  });
+  const [ubicacion] = useState({ ciudad: 'Chetumal, Q. Roo' });
+  const [brigadasDisponibles, setBrigadasDisponibles] = useState([]);
+  const [asignandoBrigada, setAsignandoBrigada] = useState(false);
+  
+  // Estados para filtro de fechas
+  const [filtroFechaInicio, setFiltroFechaInicio] = useState('');
+  const [filtroFechaFin, setFiltroFechaFin] = useState('');
+  const [mostrarFiltroFechas, setMostrarFiltroFechas] = useState(false);
 
-  // Cargar reportes
-  const cargarReportes = async () => {
-    try {
-      setLoading(true);
-      
-      // Consulta directa a Firestore por categoría
-      const reportesRef = collection(db, "reportes");
-      const q = query(reportesRef, where("categoria", "==", CATEGORIAS.ALUMBRADO));
-      const querySnapshot = await getDocs(q);
-      
-      const reportesData = [];
-      querySnapshot.forEach((doc) => {
-        reportesData.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-      
-      console.log("Reportes de alumbrado cargados:", reportesData.length);
-      setReportes(reportesData);
-      setError(null);
-    } catch (error) {
-      console.error("Error al cargar reportes:", error);
-      setError("Error al cargar los reportes. Por favor, intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Cargar reportes al iniciar el componente
+  // Cargar datos iniciales
   useEffect(() => {
-    cargarReportes();
+    cargarDatosIniciales();
   }, []);
 
-  // Filtrar reportes según estado
-  const reportesFiltrados = reportes.filter(reporte => {
-    // Filtrar por estado
-    if (filtroEstado !== 'todos' && reporte.estado !== filtroEstado) {
-      return false;
+  const cargarDatosIniciales = async () => {
+    setLoading(true);
+    
+    // Cargar reportes
+    const resultadoReportes = await ReportesAlumbradoController.cargarReportes();
+    if (resultadoReportes.success) {
+      setReportes(resultadoReportes.data);
+      setError(null);
+    } else {
+      setError(resultadoReportes.error);
     }
     
-    return true;
-  });
-
-  // Calcular estadísticas
-  const totalReportes = reportes.length;
-  const reportesPendientes = reportes.filter(r => r.estado === 'pendiente').length;
-  const reportesEnRevision = reportes.filter(r => r.estado === 'en revisión').length;
-  const reportesAsignados = reportes.filter(r => r.estado === 'asignado').length;
-  const reportesEnProceso = reportes.filter(r => r.estado === 'en_proceso' || r.estado === 'en proceso').length;
-  const reportesResueltos = reportes.filter(r => r.estado === 'completado' || r.estado === 'resuelto').length;
-
-  // Mostrar detalle de reporte
-  const mostrarDetalle = (reporte) => {
-    setReporteSeleccionado(reporte);
+    // Cargar brigadas
+    const resultadoBrigadas = await ReportesAlumbradoController.cargarBrigadasDisponibles();
+    if (resultadoBrigadas.success) {
+      setBrigadasDisponibles(resultadoBrigadas.data);
+    }
+    
+    setLoading(false);
   };
 
-  // Cerrar modal de detalle
-  const cerrarDetalle = () => {
-    setReporteSeleccionado(null);
-    setMensajeExito(null);
+  // Limpiar filtros de fecha
+  const limpiarFiltrosFecha = () => {
+    setFiltroFechaInicio('');
+    setFiltroFechaFin('');
+  };
+
+  // Aplicar filtros preestablecidos
+  const aplicarFiltroPreestablecido = (tipo) => {
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = hoy.getMonth();
+    
+    switch(tipo) {
+      case 'hoy':
+        const hoyStr = hoy.toISOString().split('T')[0];
+        setFiltroFechaInicio(hoyStr);
+        setFiltroFechaFin(hoyStr);
+        break;
+      case 'semana':
+        const inicioSemana = new Date(hoy);
+        inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+        const finSemana = new Date(inicioSemana);
+        finSemana.setDate(inicioSemana.getDate() + 6);
+        setFiltroFechaInicio(inicioSemana.toISOString().split('T')[0]);
+        setFiltroFechaFin(finSemana.toISOString().split('T')[0]);
+        break;
+      case 'mes':
+        const inicioMes = new Date(año, mes, 1);
+        const finMes = new Date(año, mes + 1, 0);
+        setFiltroFechaInicio(inicioMes.toISOString().split('T')[0]);
+        setFiltroFechaFin(finMes.toISOString().split('T')[0]);
+        break;
+      case 'ultimos30':
+        const hace30Dias = new Date(hoy);
+        hace30Dias.setDate(hoy.getDate() - 30);
+        setFiltroFechaInicio(hace30Dias.toISOString().split('T')[0]);
+        setFiltroFechaFin(hoy.toISOString().split('T')[0]);
+        break;
+    }
+  };
+
+  // Asignar brigada a reporte
+  const asignarBrigadaReporte = async (reporteId, brigadaId) => {
+    setAsignandoBrigada(true);
+
+    const resultado = await ReportesAlumbradoController.asignarBrigadaReporte(reporteId, brigadaId);
+
+    if (resultado.success) {
+      setMensajeExito(`Reporte asignado exitosamente a ${resultado.data.brigadaNombre}`);
+      
+      // Actualizar el reporte seleccionado localmente
+      if (reporteSeleccionado && reporteSeleccionado.id === reporteId) {
+        const brigadaAsignada = brigadasDisponibles.find(b => b.id === brigadaId);
+        setReporteSeleccionado({
+          ...reporteSeleccionado,
+          estado: 'asignado',
+          brigadaAsignada: {
+            id: brigadaId,
+            nombre: brigadaAsignada?.nombre || 'Brigada',
+            tipo: brigadaAsignada?.tipo || '',
+            fechaAsignacion: new Date()
+          }
+        });
+      }
+      
+      // Actualizar la lista de reportes
+      setReportes(reportes.map(reporte => 
+        reporte.id === reporteId ? 
+        {
+          ...reporte,
+          estado: 'asignado',
+          brigadaAsignada: {
+            id: brigadaId,
+            nombre: resultado.data.brigadaNombre,
+            fechaAsignacion: new Date()
+          }
+        } : 
+        reporte
+      ));
+      
+      setTimeout(() => setMensajeExito(null), 3000);
+    } else {
+      setError(resultado.error);
+    }
+    
+    setAsignandoBrigada(false);
+  };
+
+  // Desasignar reporte de brigada
+  const desasignarReporte = async (reporte) => {
+    if (!reporte.brigadaAsignada?.id) {
+      setError("Este reporte no tiene brigada asignada");
+      return;
+    }
+
+    if (!window.confirm(`¿Está seguro de desasignar este reporte de la brigada "${reporte.brigadaAsignada.nombre}"?`)) {
+      return;
+    }
+
+    const resultado = await ReportesAlumbradoController.desasignarReporte(
+      reporte.brigadaAsignada.id,
+      reporte.id
+    );
+
+    if (resultado.success) {
+      setMensajeExito("Reporte desasignado correctamente");
+      
+      // Actualizar localmente
+      if (reporteSeleccionado && reporteSeleccionado.id === reporte.id) {
+        setReporteSeleccionado({
+          ...reporteSeleccionado,
+          estado: 'pendiente',
+          brigadaAsignada: null
+        });
+      }
+      
+      setReportes(reportes.map(r => 
+        r.id === reporte.id ? 
+        { ...r, estado: 'pendiente', brigadaAsignada: null } : 
+        r
+      ));
+      
+      setTimeout(() => setMensajeExito(null), 3000);
+    } else {
+      setError(resultado.error);
+    }
   };
 
   // Actualizar estado del reporte
   const actualizarEstadoReporte = async (nuevoEstado) => {
-    if (!reporteSeleccionado || !reporteSeleccionado.id) {
-      console.error("No hay un reporte seleccionado válido");
-      return;
-    }
+    setActualizandoEstado(true);
     
-    try {
-      setActualizandoEstado(true);
-      
-      // Referencia al documento del reporte
-      const reporteRef = doc(db, "reportes", reporteSeleccionado.id);
-      
-      // Si el estado es "resuelto" o "completado", añadir fecha de resolución
-      const datosActualizacion = { 
-        estado: nuevoEstado 
-      };
-      
-      if (nuevoEstado === 'resuelto' || nuevoEstado === 'completado') {
-        datosActualizacion.fechaResolucion = new Date();
-      }
-      
-      // Actualizar en Firestore
-      await updateDoc(reporteRef, datosActualizacion);
-      
-      // Actualizar el reporte seleccionado localmente
+    const resultado = await ReportesAlumbradoController.actualizarEstadoReporte(
+      reporteSeleccionado.id, 
+      nuevoEstado
+    );
+    
+    if (resultado.success) {
+      // Actualizar el reporte seleccionado
       setReporteSeleccionado({
         ...reporteSeleccionado,
         estado: nuevoEstado,
-        ...(nuevoEstado === 'resuelto' || nuevoEstado === 'completado' ? { fechaResolucion: { seconds: Math.floor(Date.now() / 1000) } } : {})
+        ...(resultado.data.fechaResolucion ? { fechaResolucion: { seconds: Math.floor(Date.now() / 1000) } } : {})
       });
       
       // Actualizar la lista de reportes
@@ -179,168 +256,52 @@ const ReportesAlumbrado = () => {
         {
           ...reporte,
           estado: nuevoEstado,
-          ...(nuevoEstado === 'resuelto' || nuevoEstado === 'completado' ? { fechaResolucion: { seconds: Math.floor(Date.now() / 1000) } } : {})
+          ...(resultado.data.fechaResolucion ? { fechaResolucion: { seconds: Math.floor(Date.now() / 1000) } } : {})
         } : 
         reporte
       ));
       
-      // Mostrar mensaje de éxito
       setMensajeExito(`El estado del reporte ha sido actualizado a "${nuevoEstado}".`);
-      
-      // Ocultar mensaje después de 3 segundos
-      setTimeout(() => {
-        setMensajeExito(null);
-      }, 3000);
-      
-    } catch (error) {
-      console.error("Error al actualizar estado del reporte:", error);
-      setError("Ocurrió un error al actualizar el estado del reporte. Intente nuevamente.");
-    } finally {
-      setActualizandoEstado(false);
+      setTimeout(() => setMensajeExito(null), 3000);
+    } else {
+      setError(resultado.error);
     }
+    
+    setActualizandoEstado(false);
   };
   
-  // Generar PDF del reporte - Versión simplificada sin autoTable
+  // Generar PDF del reporte
   const generarPDF = async () => {
-    if (!reporteSeleccionado) return;
+    setGenerandoPDF(true);
     
-    try {
-      setGenerandoPDF(true);
-      
-      // Crear nuevo documento PDF
-      const pdf = new jsPDF();
-      
-      // Configuración de página
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      
-      // Título
-      pdf.text(`Reporte de Alumbrado Público - Folio: ${reporteSeleccionado.folio || 'N/A'}`, 15, 20);
-      
-      // Detalles del reporte
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(12);
-      
-      let yPos = 40; // Posición Y inicial
-      const lineHeight = 10; // Altura de línea
-      
-      // Información del reporte
-      pdf.text(`Fecha de reporte: ${formatearFecha(reporteSeleccionado.fecha)}`, 15, yPos);
-      yPos += lineHeight;
-      
-      pdf.text(`Estado: ${reporteSeleccionado.estado ? reporteSeleccionado.estado.charAt(0).toUpperCase() + reporteSeleccionado.estado.slice(1) : 'Pendiente'}`, 15, yPos);
-      yPos += lineHeight;
-      
-      pdf.text(`Dirección: ${reporteSeleccionado.direccion || 'No especificada'}`, 15, yPos);
-      yPos += lineHeight;
-      
-      pdf.text(`Colonia: ${reporteSeleccionado.colonia || 'No especificada'}`, 15, yPos);
-      yPos += lineHeight;
-      
-      // Fecha de resolución si existe
-      if (reporteSeleccionado.fechaResolucion) {
-        pdf.text(`Fecha de resolución: ${formatearFecha(reporteSeleccionado.fechaResolucion)}`, 15, yPos);
-        yPos += lineHeight;
-      }
-      
-      // Asignación si existe
-      if (reporteSeleccionado.asignadoA) {
-        pdf.text(`Asignado a: ${reporteSeleccionado.asignadoA}`, 15, yPos);
-        yPos += lineHeight;
-      }
-      
-      // Comentarios si existen
-      if (reporteSeleccionado.comentario) {
-        yPos += lineHeight; // Espacio adicional
-        pdf.setFont("helvetica", "bold");
-        pdf.text('Comentarios:', 15, yPos);
-        yPos += lineHeight;
-        
-        pdf.setFont("helvetica", "normal");
-        // Partir el comentario en varias líneas si es largo
-        const commentLines = pdf.splitTextToSize(reporteSeleccionado.comentario, 180);
-        pdf.text(commentLines, 15, yPos);
-        yPos += (lineHeight * commentLines.length);
-      }
-      
-      // Agregar imagen si existe
-      if (reporteSeleccionado.foto) {
-        try {
-          yPos += lineHeight * 2; // Espacio adicional
-          
-          pdf.setFont("helvetica", "bold");
-          pdf.text('Imagen del reporte:', 15, yPos);
-          yPos += lineHeight;
-          
-          // Comprobar si es necesario agregar una nueva página para la imagen
-          if (yPos > 180) {
-            pdf.addPage();
-            yPos = 30;
-          }
-          
-          // Intenta cargar la imagen
-          pdf.addImage(reporteSeleccionado.foto, 'JPEG', 15, yPos, 180, 100);
-        } catch (imgError) {
-          console.error("Error al agregar imagen al PDF:", imgError);
-          // Si falla la imagen, agregar un texto indicando el error
-          pdf.setFont("helvetica", "normal");
-          pdf.text("No se pudo cargar la imagen del reporte.", 15, yPos + 10);
-        }
-      }
-      
-      // Agregar pie de página
-      const pageCount = pdf.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(10);
-        pdf.text(`Página ${i} de ${pageCount} - Generado el ${new Date().toLocaleDateString()}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
-      }
-      
-      // Guardar el PDF
-      pdf.save(`Reporte_Alumbrado_${reporteSeleccionado.folio || reporteSeleccionado.id}.pdf`);
-      
-      // Mostrar mensaje de éxito
+    const resultado = await ReportesAlumbradoController.generarPDF(reporteSeleccionado);
+    
+    if (resultado.success) {
       setMensajeExito("El PDF se ha generado correctamente.");
-      
-      // Ocultar mensaje después de 3 segundos
-      setTimeout(() => {
-        setMensajeExito(null);
-      }, 3000);
-      
-    } catch (error) {
-      console.error("Error al generar PDF:", error);
-      setError("Ocurrió un error al generar el PDF. Intente nuevamente.");
-    } finally {
-      setGenerandoPDF(false);
+      setTimeout(() => setMensajeExito(null), 3000);
+    } else {
+      setError(resultado.error);
     }
+    
+    setGenerandoPDF(false);
   };
 
-  // Formatear fecha
-  const formatearFecha = (fechaData) => {
-    try {
-      let fecha;
-      if (fechaData && fechaData.seconds) {
-        fecha = new Date(fechaData.seconds * 1000);
-      } else if (fechaData instanceof Date) {
-        fecha = fechaData;
-      } else if (fechaData) {
-        fecha = new Date(fechaData);
-      } else {
-        return 'Fecha no disponible';
-      }
-      
-      return fecha.toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      console.error("Error al formatear fecha:", e);
-      return 'Fecha no disponible';
+  // Limpiar mensajes automáticamente
+  useEffect(() => {
+    if (mensajeExito) {
+      const timer = setTimeout(() => setMensajeExito(null), 3000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [mensajeExito]);
+
+  // Calcular datos para mostrar (con filtros aplicados)
+  const reportesFiltrados = ReportesAlumbradoController.filtrarReportes(
+    reportes, 
+    filtroEstado, 
+    filtroFechaInicio, 
+    filtroFechaFin
+  );
+  const estadisticas = ReportesAlumbradoController.calcularEstadisticas(reportesFiltrados);
 
   // Renderizado condicional según el estado
   if (loading) {
@@ -359,7 +320,7 @@ const ReportesAlumbrado = () => {
           <i className="fas fa-exclamation-triangle"></i>
         </div>
         <p className="error-message">{error}</p>
-        <button className="btn-retry" onClick={cargarReportes}>
+        <button className="btn-retry" onClick={cargarDatosIniciales}>
           <i className="fas fa-sync"></i> Intentar nuevamente
         </button>
       </div>
@@ -368,7 +329,7 @@ const ReportesAlumbrado = () => {
 
   return (
     <div className="reportes-app">
-      {/* Header con título */}
+      {/* Header */}
       <header className="app-header">
         <h1>Reportes de Alumbrado Público</h1>
         <p className="ubicacion-actual">
@@ -376,12 +337,20 @@ const ReportesAlumbrado = () => {
         </p>
       </header>
 
+      {/* Mensaje de éxito */}
+      {mensajeExito && (
+        <div className="mensaje-exito-global">
+          <i className="fas fa-check-circle"></i> {mensajeExito}
+        </div>
+      )}
+
       {/* Panel Administrativo */}
       <div className="panel-admin">
         <h2 className="panel-admin-title">
           <i className="fas fa-tachometer-alt"></i> Panel Administrativo
         </h2>
         
+        {/* Filtros de Estado */}
         <div className="panel-admin-controls">
           <button 
             className={`panel-btn ${filtroEstado === 'todos' ? 'active' : ''}`}
@@ -407,84 +376,167 @@ const ReportesAlumbrado = () => {
           >
             <i className="fas fa-check-circle"></i> Resueltos
           </button>
+          
+          {/* Botón para mostrar filtros de fecha */}
+          <button 
+            className={`panel-btn filtro-fecha-btn ${mostrarFiltroFechas ? 'active' : ''}`}
+            onClick={() => setMostrarFiltroFechas(!mostrarFiltroFechas)}
+          >
+            <i className="fas fa-calendar-alt"></i> Filtrar por fecha
+          </button>
         </div>
+
+        {/* Panel de Filtros de Fecha */}
+        {mostrarFiltroFechas && (
+          <div className="filtros-fecha-panel">
+            <div className="filtros-fecha-header">
+              <h3><i className="fas fa-calendar-alt"></i> Filtrar por período</h3>
+            </div>
+            
+            {/* Filtros rápidos */}
+            <div className="filtros-rapidos">
+              <button 
+                className="btn-filtro-rapido"
+                onClick={() => aplicarFiltroPreestablecido('hoy')}
+              >
+                Hoy
+              </button>
+              <button 
+                className="btn-filtro-rapido"
+                onClick={() => aplicarFiltroPreestablecido('semana')}
+              >
+                Esta semana
+              </button>
+              <button 
+                className="btn-filtro-rapido"
+                onClick={() => aplicarFiltroPreestablecido('mes')}
+              >
+                Este mes
+              </button>
+              <button 
+                className="btn-filtro-rapido"
+                onClick={() => aplicarFiltroPreestablecido('ultimos30')}
+              >
+                Últimos 30 días
+              </button>
+            </div>
+            
+            {/* Filtro personalizado */}
+            <div className="filtro-personalizado">
+              <div className="fecha-input-group">
+                <div className="fecha-input">
+                  <label>Fecha inicio:</label>
+                  <input
+                    type="date"
+                    value={filtroFechaInicio}
+                    onChange={(e) => setFiltroFechaInicio(e.target.value)}
+                    className="input-fecha"
+                  />
+                </div>
+                <div className="fecha-input">
+                  <label>Fecha fin:</label>
+                  <input
+                    type="date"
+                    value={filtroFechaFin}
+                    onChange={(e) => setFiltroFechaFin(e.target.value)}
+                    className="input-fecha"
+                  />
+                </div>
+              </div>
+              
+              <div className="filtro-acciones">
+                <button 
+                  className="btn-limpiar-filtro"
+                  onClick={limpiarFiltrosFecha}
+                  disabled={!filtroFechaInicio && !filtroFechaFin}
+                >
+                  <i className="fas fa-eraser"></i> Limpiar filtros
+                </button>
+              </div>
+            </div>
+            
+            {/* Indicador de filtro activo */}
+            {(filtroFechaInicio || filtroFechaFin) && (
+              <div className="filtro-activo-indicator">
+                <i className="fas fa-filter"></i>
+                <span>
+                  Mostrando reportes del {filtroFechaInicio || '...'} al {filtroFechaFin || '...'}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         
+        {/* Estadísticas */}
         <div className="panel-admin-cards">
           <div className="panel-admin-card total">
-            <div className="panel-card-icon">
-              <i className="fas fa-clipboard-list"></i>
-            </div>
+            <div className="panel-card-icon"><i className="fas fa-clipboard-list"></i></div>
             <div className="panel-card-content">
               <div className="panel-card-title">Total Reportes</div>
-              <div className="panel-card-value">{totalReportes}</div>
+              <div className="panel-card-value">{estadisticas.total}</div>
             </div>
           </div>
           
           <div className="panel-admin-card pendientes">
-            <div className="panel-card-icon">
-              <i className="fas fa-clock"></i>
-            </div>
+            <div className="panel-card-icon"><i className="fas fa-clock"></i></div>
             <div className="panel-card-content">
               <div className="panel-card-title">Pendientes</div>
-              <div className="panel-card-value">{reportesPendientes}</div>
+              <div className="panel-card-value">{estadisticas.pendientes}</div>
             </div>
           </div>
           
           <div className="panel-admin-card en-revision">
-            <div className="panel-card-icon">
-              <i className="fas fa-search"></i>
-            </div>
+            <div className="panel-card-icon"><i className="fas fa-search"></i></div>
             <div className="panel-card-content">
               <div className="panel-card-title">En Revisión</div>
-              <div className="panel-card-value">{reportesEnRevision}</div>
+              <div className="panel-card-value">{estadisticas.enRevision}</div>
             </div>
           </div>
           
           <div className="panel-admin-card asignados">
-            <div className="panel-card-icon">
-              <i className="fas fa-user-check"></i>
-            </div>
+            <div className="panel-card-icon"><i className="fas fa-user-check"></i></div>
             <div className="panel-card-content">
               <div className="panel-card-title">Asignados</div>
-              <div className="panel-card-value">{reportesAsignados}</div>
+              <div className="panel-card-value">{estadisticas.asignados}</div>
             </div>
           </div>
           
           <div className="panel-admin-card en-proceso">
-            <div className="panel-card-icon">
-              <i className="fas fa-sync-alt"></i>
-            </div>
+            <div className="panel-card-icon"><i className="fas fa-sync-alt"></i></div>
             <div className="panel-card-content">
               <div className="panel-card-title">En Proceso</div>
-              <div className="panel-card-value">{reportesEnProceso}</div>
+              <div className="panel-card-value">{estadisticas.enProceso}</div>
             </div>
           </div>
           
           <div className="panel-admin-card resueltos">
-            <div className="panel-card-icon">
-              <i className="fas fa-check-circle"></i>
-            </div>
+            <div className="panel-card-icon"><i className="fas fa-check-circle"></i></div>
             <div className="panel-card-content">
               <div className="panel-card-title">Resueltos</div>
-              <div className="panel-card-value">{reportesResueltos}</div>
+              <div className="panel-card-value">{estadisticas.resueltos}</div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Vista de reportes */}
+      {/* Lista de reportes */}
       <div className="reportes-content">
         {reportesFiltrados.length === 0 ? (
           <div className="no-reports">
-            <div className="no-reports-icon">
-              <i className="fas fa-lightbulb"></i>
-            </div>
+            <div className="no-reports-icon"><i className="fas fa-lightbulb"></i></div>
             <h3>No hay reportes de alumbrado público</h3>
             <p>No se encontraron reportes con los filtros seleccionados.</p>
-            {filtroEstado !== 'todos' && (
-              <button className="btn-reset-inline" onClick={() => setFiltroEstado('todos')}>
-                Ver todos los reportes
-              </button>
+            {(filtroEstado !== 'todos' || filtroFechaInicio || filtroFechaFin) && (
+              <div className="no-reports-actions">
+                <button className="btn-reset-inline" onClick={() => setFiltroEstado('todos')}>
+                  Ver todos los reportes
+                </button>
+                {(filtroFechaInicio || filtroFechaFin) && (
+                  <button className="btn-reset-inline" onClick={limpiarFiltrosFecha}>
+                    Limpiar filtros de fecha
+                  </button>
+                )}
+              </div>
             )}
           </div>
         ) : (
@@ -493,7 +545,7 @@ const ReportesAlumbrado = () => {
               <div 
                 key={reporte.id || reporte.folio} 
                 className={`report-card ${reporte.estado?.toLowerCase().replace('_', '-') || 'pendiente'}`}
-                onClick={() => mostrarDetalle(reporte)}
+                onClick={() => setReporteSeleccionado(reporte)}
               >
                 <div className="report-card-header">
                   <div className="report-category">
@@ -517,8 +569,25 @@ const ReportesAlumbrado = () => {
                   
                   <div className="report-fecha">
                     <i className="far fa-calendar-alt"></i>
-                    <span>{formatearFecha(reporte.fecha)}</span>
+                    <span>{ReportesAlumbradoController.formatearFecha(reporte.fecha)}</span>
                   </div>
+
+                  {reporte.brigadaAsignada && (
+                    <div className="report-brigada-asignada">
+                      <i className="fas fa-users"></i>
+                      <span>Brigada: <strong>{reporte.brigadaAsignada.nombre}</strong></span>
+                      <button 
+                        className="btn-desasignar-mini"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          desasignarReporte(reporte);
+                        }}
+                        title="Desasignar brigada"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="report-card-footer">
@@ -532,20 +601,17 @@ const ReportesAlumbrado = () => {
         )}
       </div>
       
-      {/* Modal de detalle de reporte */}
+      {/* Modal de detalle */}
       {reporteSeleccionado && (
         <div className="reporte-modal">
           <div className="reporte-modal-content">
             <div className="reporte-modal-header">
-              <h2>
-                Alumbrado Público - Folio: {reporteSeleccionado.folio}
-              </h2>
-              <button className="btn-cerrar" onClick={cerrarDetalle}>
+              <h2>Alumbrado Público - Folio: {reporteSeleccionado.folio}</h2>
+              <button className="btn-cerrar" onClick={() => setReporteSeleccionado(null)}>
                 <i className="fas fa-times"></i>
               </button>
             </div>
             
-            {/* Mensaje de éxito */}
             {mensajeExito && (
               <div className="mensaje-exito">
                 <i className="fas fa-check-circle"></i> {mensajeExito}
@@ -556,7 +622,7 @@ const ReportesAlumbrado = () => {
               <div className="reporte-detalles">
                 <div className="reporte-campo">
                   <div className="reporte-campo-label">Fecha:</div>
-                  <div className="reporte-campo-valor">{formatearFecha(reporteSeleccionado.fecha)}</div>
+                  <div className="reporte-campo-valor">{ReportesAlumbradoController.formatearFecha(reporteSeleccionado.fecha)}</div>
                 </div>
                 
                 <div className="reporte-campo">
@@ -574,7 +640,6 @@ const ReportesAlumbrado = () => {
                   <div className="reporte-campo-valor">
                     <EstadoTag estado={reporteSeleccionado.estado || 'pendiente'} />
                     
-                    {/* Selector de estado (con funcionalidad real) */}
                     <select 
                       className="estado-selector"
                       value={reporteSeleccionado.estado || 'pendiente'}
@@ -596,21 +661,58 @@ const ReportesAlumbrado = () => {
                   </div>
                 </div>
                 
-                {reporteSeleccionado.asignadoA && (
+                {/* Sección de brigada para reportes asignados */}
+                {reporteSeleccionado.estado === 'asignado' && (
                   <div className="reporte-campo">
-                    <div className="reporte-campo-label">Asignado a:</div>
+                    <div className="reporte-campo-label">Brigada Asignada:</div>
                     <div className="reporte-campo-valor">
-                      <i className="fas fa-user-check"></i> {reporteSeleccionado.asignadoA}
+                      {reporteSeleccionado.brigadaAsignada && (
+                        <div className="brigada-asignada-info">
+                          <i className="fas fa-users"></i>
+                          <span>{reporteSeleccionado.brigadaAsignada.nombre}</span>
+                          <small className="fecha-asignacion">
+                            Asignado el: {ReportesAlumbradoController.formatearFecha(reporteSeleccionado.brigadaAsignada.fechaAsignacion)}
+                          </small>
+                        </div>
+                      )}
+                      
+                      <select 
+                        className="brigada-selector"
+                        value={reporteSeleccionado.brigadaAsignada?.id || ''}
+                        onChange={(e) => {
+                          if (e.target.value === '') {
+                            if (reporteSeleccionado.brigadaAsignada) {
+                              desasignarReporte(reporteSeleccionado);
+                            }
+                          } else {
+                            asignarBrigadaReporte(reporteSeleccionado.id, e.target.value);
+                          }
+                        }}
+                        disabled={asignandoBrigada}
+                      >
+                        <option value="">Sin asignar</option>
+                        {brigadasDisponibles.map(brigada => (
+                          <option key={brigada.id} value={brigada.id}>
+                            {brigada.nombre} ({brigada.tipo === 'alumbrado' ? 'Alumbrado' : 'Mixta'})
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {asignandoBrigada && (
+                        <span className="brigada-cargando">
+                          <i className="fas fa-spinner fa-spin"></i> Actualizando brigada...
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
                 
-                {/* Mostrar fecha de resolución si el reporte está resuelto */}
+                {/* Fecha de resolución */}
                 {(reporteSeleccionado.estado === 'resuelto' || reporteSeleccionado.estado === 'completado') && reporteSeleccionado.fechaResolucion && (
                   <div className="reporte-campo">
                     <div className="reporte-campo-label">Fecha de resolución:</div>
                     <div className="reporte-campo-valor">
-                      <i className="fas fa-calendar-check"></i> {formatearFecha(reporteSeleccionado.fechaResolucion)}
+                      <i className="fas fa-calendar-check"></i> {ReportesAlumbradoController.formatearFecha(reporteSeleccionado.fechaResolucion)}
                     </div>
                   </div>
                 )}
@@ -661,44 +763,13 @@ const ReportesAlumbrado = () => {
                   </>
                 )}
               </button>
-              <button className="btn-cerrar-modal" onClick={cerrarDetalle}>
+              <button className="btn-cerrar-modal" onClick={() => setReporteSeleccionado(null)}>
                 Cerrar
               </button>
             </div>
           </div>
         </div>
       )}
-      
-      {/* Estilos para el mensaje de éxito */}
-      <style jsx>
-        {`
-          .mensaje-exito {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 10px 15px;
-            border-radius: 4px;
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-          }
-          
-          .mensaje-exito i {
-            margin-right: 8px;
-            font-size: 18px;
-          }
-          
-          .estado-cargando {
-            margin-left: 10px;
-            font-size: 14px;
-            color: #666;
-          }
-          
-          .estado-cargando i {
-            margin-right: 5px;
-          }
-        `}
-      </style>
     </div>
   );
 };

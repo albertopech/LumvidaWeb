@@ -22,6 +22,10 @@ const GestionPermisos = () => {
     { id: 'admin_reports', nombre: 'Gestión de Reportes', descripcion: 'Administración y edición de reportes existentes' },
     { id: 'analytics', nombre: 'Estadísticas', descripcion: 'Visualización de estadísticas y gráficos del sistema' },
     { id: 'admin_users', nombre: 'Admin. Usuarios', descripcion: 'Administración avanzada de usuarios existentes' },
+    { id: 'reportes_alumbrado', nombre: 'Reportes de Alumbrado', descripcion: 'Gestión específica de reportes de alumbrado público' },
+    { id: 'reportes_bacheo', nombre: 'Reportes de Bacheo', descripcion: 'Gestión específica de reportes de bacheo de calles' },
+    { id: 'reportes_basura', nombre: 'Reportes de Basura', descripcion: 'Gestión específica de reportes de basura acumulada' },
+    { id: 'reportes_drenaje', nombre: 'Reportes de Drenaje', descripcion: 'Gestión específica de reportes de drenajes obstruidos' },
   ];
 
   // Cargar la lista de usuarios al iniciar

@@ -1,4 +1,4 @@
-// src/controllers/BrigadaController.js
+// src/controllers/BrigadaController.js - Versión corregida
 import { brigadaModel, TIPOS_BRIGADA, ESTADOS_BRIGADA, ROLES_BRIGADA } from '../models/brigadaModel';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../models/firebase';
@@ -88,19 +88,36 @@ export class BrigadaController {
     }
   }
 
-  // Obtener brigadas disponibles para un tipo de reporte
+  // FUNCIÓN CORREGIDA: Obtener brigadas disponibles para un tipo de reporte
   static async obtenerBrigadasDisponibles(tipoReporte, ubicacion = null) {
     try {
-      // Mapear categorías de reporte a tipos de brigada
+      console.log("🔍 Buscando brigadas para tipo de reporte:", tipoReporte);
+      
+      // MAPEO CORREGIDO: de categorías de reporte a tipos de brigada
       const mapeoTipos = {
-        'Alumbrado Público': TIPOS_BRIGADA.ALUMBRADO,
-        'Basura Acumulada': TIPOS_BRIGADA.BASURA,
-        'Bacheo': TIPOS_BRIGADA.BACHEO,
-        'Drenajes Obstruidos': TIPOS_BRIGADA.DRENAJE
+        'Alumbrado Público': TIPOS_BRIGADA.ALUMBRADO,     // 'alumbrado'
+        'Basura Acumulada': TIPOS_BRIGADA.BASURA,         // 'basura'
+        'Bacheo': TIPOS_BRIGADA.BACHEO,                   // 'bacheo'
+        'Drenajes Obstruidos': TIPOS_BRIGADA.DRENAJE      // 'drenaje'
       };
 
-      const tipoBrigada = mapeoTipos[tipoReporte] || tipoReporte.toLowerCase();
+      const tipoBrigada = mapeoTipos[tipoReporte];
+      
+      console.log("🎯 Tipo de reporte:", tipoReporte);
+      console.log("🎯 Tipo de brigada buscado:", tipoBrigada);
+      
+      if (!tipoBrigada) {
+        console.warn("⚠️ Tipo de reporte no encontrado en el mapeo:", tipoReporte);
+        return {
+          success: false,
+          error: `Tipo de reporte no reconocido: ${tipoReporte}`
+        };
+      }
+
+      // Obtener brigadas disponibles para este tipo específico
       const resultado = await brigadaModel.obtenerDisponibles(tipoBrigada);
+      
+      console.log("📋 Brigadas encontradas:", resultado.data?.length || 0);
       
       if (resultado.success && ubicacion) {
         // Aquí podrías agregar lógica para filtrar por ubicación
@@ -113,7 +130,7 @@ export class BrigadaController {
 
       return resultado;
     } catch (error) {
-      console.error("Error en BrigadaController.obtenerBrigadasDisponibles:", error);
+      console.error("❌ Error en BrigadaController.obtenerBrigadasDisponibles:", error);
       return {
         success: false,
         error: "Error al obtener brigadas disponibles: " + error.message
@@ -124,6 +141,8 @@ export class BrigadaController {
   // Asignar reporte a brigada
   static async asignarReporte(brigadaId, reporteId, asignadoPor) {
     try {
+      console.log("📝 Asignando reporte:", reporteId, "a brigada:", brigadaId);
+      
       // 1. Agregar reporte a la brigada
       const resultadoBrigada = await brigadaModel.agregarReporte(brigadaId, reporteId);
       if (!resultadoBrigada.success) {
@@ -152,6 +171,8 @@ export class BrigadaController {
 
       await updateDoc(reporteRef, datosActualizacion);
 
+      console.log("✅ Reporte asignado exitosamente");
+
       return {
         success: true,
         message: `Reporte asignado exitosamente a la brigada ${brigadaInfo.data.nombre}`,
@@ -163,7 +184,7 @@ export class BrigadaController {
       };
 
     } catch (error) {
-      console.error("Error en BrigadaController.asignarReporte:", error);
+      console.error("❌ Error en BrigadaController.asignarReporte:", error);
       
       // Intentar revertir cambios en caso de error
       try {
@@ -182,6 +203,8 @@ export class BrigadaController {
   // Desasignar reporte de brigada
   static async desasignarReporte(brigadaId, reporteId) {
     try {
+      console.log("🗑️ Desasignando reporte:", reporteId, "de brigada:", brigadaId);
+      
       // 1. Remover reporte de la brigada
       const resultadoBrigada = await brigadaModel.removerReporte(brigadaId, reporteId);
       if (!resultadoBrigada.success) {
@@ -198,6 +221,8 @@ export class BrigadaController {
 
       await updateDoc(reporteRef, datosActualizacion);
 
+      console.log("✅ Reporte desasignado exitosamente");
+
       return {
         success: true,
         message: "Reporte desasignado exitosamente",
@@ -205,7 +230,7 @@ export class BrigadaController {
       };
 
     } catch (error) {
-      console.error("Error en BrigadaController.desasignarReporte:", error);
+      console.error("❌ Error en BrigadaController.desasignarReporte:", error);
       return {
         success: false,
         error: "Error al desasignar reporte: " + error.message

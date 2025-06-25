@@ -1,4 +1,4 @@
-// src/views/PanelLateral.jsx - Versión actualizada con Gestión de Brigadas
+// src/views/PanelLateral.jsx - Versión actualizada con nuevos reportes específicos
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./Styles/PanelLateral.css";
@@ -56,7 +56,12 @@ const PanelLateral = () => {
     map: '🗺️',
     message: '✉️',
     advanced: '📋',
-    brigadas: '👷‍♂️' // Nuevo icono para brigadas
+    brigadas: '👷‍♂️',
+    // NUEVOS ICONOS PARA REPORTES ESPECÍFICOS
+    alumbrado: '💡',
+    bacheo: '🛣️',
+    basura: '🗑️',
+    drenaje: '💧'
   };
 
   // Cargar información del usuario y sus permisos al iniciar
@@ -220,7 +225,7 @@ const PanelLateral = () => {
     }
   };
 
-  // Items del menú completo - ACTUALIZADO CON BRIGADAS
+  // Items del menú completo - ACTUALIZADO CON REPORTES ESPECÍFICOS
   const allMenuItems = [
     { id: 'dashboard', icon: icons.home, label: 'Panel Administrativo' },
     { id: 'dashboard_jefe', icon: icons.dashboard, label: 'Dashboard Departamentos' },
@@ -230,7 +235,12 @@ const PanelLateral = () => {
     { id: 'analytics', icon: icons.analytics, label: 'Estadísticas' },
     { id: 'admin_users', icon: icons.users, label: 'Admin. Usuarios' },
     { id: 'admin_permisos', icon: icons.permisos, label: 'Gestión de Permisos' },
-    { id: 'admin_brigadas', icon: icons.brigadas, label: 'Gestión de Brigadas' }, // NUEVO ITEM
+    { id: 'admin_brigadas', icon: icons.brigadas, label: 'Gestión de Brigadas' },
+    // NUEVOS ITEMS DE REPORTES ESPECÍFICOS
+    { id: 'reportes_alumbrado', icon: icons.alumbrado, label: 'Reportes de Alumbrado' },
+    { id: 'reportes_bacheo', icon: icons.bacheo, label: 'Reportes de Bacheo' },
+    { id: 'reportes_basura', icon: icons.basura, label: 'Reportes de Basura' },
+    { id: 'reportes_drenaje', icon: icons.drenaje, label: 'Reportes de Drenaje' },
   ];
 
   // Filtrar menú según los módulos permitidos
@@ -303,10 +313,19 @@ const PanelLateral = () => {
         return <GestionReportes />;
       case 'admin_permisos':
         return <GestionPermisos />;
-      case 'admin_brigadas':  // NUEVO CASO PARA BRIGADAS
+      case 'admin_brigadas':
         return <GestionBrigadas />;
       case 'dashboard_jefe':
         return <DashboardJefeDepartamento />;
+      // NUEVOS CASOS PARA REPORTES ESPECÍFICOS
+      case 'reportes_alumbrado':
+        return <ReportesAlumbrado />;
+      case 'reportes_bacheo':
+        return <ReportesBacheo />;
+      case 'reportes_basura':
+        return <ReportesBasura />;
+      case 'reportes_drenaje':
+        return <ReportesDrenaje />;
       default:
         return (
           <div className="content-card">

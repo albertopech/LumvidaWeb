@@ -1,7 +1,7 @@
 // src/controllers/PermisosController.js - Versión completa actualizada con Brigadas
 import { db } from '../models/firebase';
-import { collection, doc, getDoc, setDoc, deleteDoc } 
-from 'firebase/firestore';
+// ✅ CORRECTO:
+import { collection, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 
 /**
  * Clase para gestionar los permisos por rol en la aplicación

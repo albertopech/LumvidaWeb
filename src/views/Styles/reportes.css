@@ -132,6 +132,412 @@ body {
   background-color: var(--primary-dark);
 }
 
+
+/* === FILTROS DE FECHA === */
+.filtro-fecha-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.filtro-fecha-btn.active {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+}
+
+.filtros-fecha-panel {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 15px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filtros-fecha-header h3 {
+  margin: 0 0 15px 0;
+  color: #374151;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filtros-rapidos {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-filtro-rapido {
+  background: white;
+  border: 2px solid #e5e7eb;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-filtro-rapido:hover {
+  background: #6366f1;
+  color: white;
+  border-color: #6366f1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.filtro-personalizado {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.fecha-input-group {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.fecha-input {
+  flex: 1;
+}
+
+.fecha-input label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.input-fecha {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+  font-family: var(--font-main);
+}
+
+.input-fecha:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.filtro-acciones {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-limpiar-filtro {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-limpiar-filtro:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-limpiar-filtro:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.filtro-activo-indicator {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.no-reports-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+/* === MEJORAS PARA BRIGADAS === */
+.mensaje-exito-global {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  border: 1px solid #c3e6cb;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.mensaje-exito-global i {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.mensaje-exito {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  border: 1px solid #c3e6cb;
+}
+
+.mensaje-exito i {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.estado-cargando,
+.brigada-cargando {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.report-brigada-asignada {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #059669;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+  margin-top: 8px;
+  transition: all 0.3s ease;
+}
+
+.report-brigada-asignada:hover {
+  background: #ecfdf5;
+  border-color: #86efac;
+}
+
+.report-brigada-asignada i {
+  color: #059669;
+}
+
+.btn-desasignar-mini {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  margin-left: auto;
+  transition: all 0.3s ease;
+}
+
+.btn-desasignar-mini:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+.brigada-asignada-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+  transition: all 0.3s ease;
+}
+
+.brigada-asignada-info:hover {
+  background: #ecfdf5;
+}
+
+.brigada-asignada-info i {
+  color: #059669;
+}
+
+.fecha-asignacion {
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-left: auto;
+}
+
+.brigada-selector,
+.estado-selector {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  width: 100%;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.brigada-selector:focus,
+.estado-selector:focus {
+  outline: none;
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.brigada-selector:disabled,
+.estado-selector:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* === RESPONSIVE DESIGN PARA FILTROS === */
+@media (max-width: 768px) {
+  .fecha-input-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filtros-rapidos {
+    justify-content: center;
+  }
+  
+  .btn-filtro-rapido {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  
+  .filtros-fecha-panel {
+    padding: 15px;
+    margin: 10px 0;
+  }
+  
+  .filtro-acciones {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .filtros-rapidos {
+    grid-template-columns: repeat(2, 1fr);
+    display: grid;
+  }
+  
+  .btn-filtro-rapido {
+    padding: 8px 12px;
+    text-align: center;
+  }
+}
+
+/* === ANIMACIONES ADICIONALES === */
+.panel-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.panel-btn:hover::before {
+  left: 100%;
+}
+
+.report-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.report-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.report-card:hover::before {
+  transform: translateX(100%);
+}
+
 /* === PANEL ADMINISTRATIVO === */
 .panel-admin {
   background-color: white;
@@ -858,3 +1264,5 @@ body {
   display: flex;
   align-items: center;
 }
+
+
