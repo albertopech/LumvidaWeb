@@ -1,4 +1,4 @@
-// src/views/PanelLateral.jsx - Versión actualizada con nuevos reportes específicos
+// src/views/PanelLateral.jsx - Con sistema de notificaciones específico por tipo
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./Styles/PanelLateral.css";
@@ -14,17 +14,16 @@ import AdminUsuarios from '../views/AdminUsuarios';
 import GestionReportes from '../views/GestionReportes';
 import GestionPermisos from '../views/GestionPermisos';
 import DashboardJefeDepartamento from '../views/DashboardJefeDepartamento';
-// Importar nuevo componente de brigadas
 import GestionBrigadas from '../views/GestionBrigadas';
 
-// Importar controlador de permisos
+// Importar controladores
 import { PermisosController } from '../controllers/PermisosController';
+import { NotificacionesController } from '../controllers/NotificacionesController';
 
 const PanelLateral = () => {
   const [expanded, setExpanded] = useState(true);
   const [activeItem, setActiveItem] = useState('dashboard');
   const [showSidebar, setShowSidebar] = useState(true);
-  const [, ] = useState({ category: '', search: '' });
   const [currentUser, setCurrentUser] = useState({
     nombre: 'Cargando...',
     email: '...',
@@ -32,6 +31,11 @@ const PanelLateral = () => {
     rol: '',
     id: null
   });
+  
+  // Estados para notificaciones - SIMPLIFICADOS
+  const [contadorNotificaciones, setContadorNotificaciones] = useState(0);
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   
   // Estado para almacenar los módulos permitidos para el usuario actual
   const [modulosPermitidos, setModulosPermitidos] = useState([]);
@@ -45,6 +49,7 @@ const PanelLateral = () => {
     chevronRight: '→',
     home: '🏠',
     users: '👥',
+    user: '👤',
     analytics: '📊',
     report: '📝',
     bell: '🔔',
@@ -57,56 +62,62 @@ const PanelLateral = () => {
     message: '✉️',
     advanced: '📋',
     brigadas: '👷‍♂️',
-    // NUEVOS ICONOS PARA REPORTES ESPECÍFICOS
+    // ICONOS PARA REPORTES ESPECÍFICOS
     alumbrado: '💡',
     bacheo: '🛣️',
     basura: '🗑️',
     drenaje: '💧'
   };
 
-  // Cargar información del usuario y sus permisos al iniciar
+  // Callback SIMPLIFICADO para manejar nuevas notificaciones
+  const manejarNuevaNotificacion = (notificacion, evento) => {
+    if (evento && evento.tipo === 'actualizar_contador') {
+      setContadorNotificaciones(NotificacionesController.obtenerContadorNoLeidas());
+      setNotificaciones(NotificacionesController.obtenerNotificaciones());
+      return;
+    }
+
+    if (notificacion) {
+      console.log('🔔 Nueva notificación:', notificacion);
+      setContadorNotificaciones(NotificacionesController.obtenerContadorNoLeidas());
+      setNotificaciones(NotificacionesController.obtenerNotificaciones());
+    }
+  };
+
+  // Cargar información del usuario y configurar notificaciones
   useEffect(() => {
     const cargarUsuario = async () => {
       try {
-        // Verificar si el usuario está autenticado
+        // Verificar autenticación
         const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
         if (!isAuthenticated) {
           navigate('/login');
           return;
         }
         
-        // Obtener ID del usuario actual
         const userId = localStorage.getItem('userId');
-        
         if (!userId) {
           console.error("No se encontró ID de usuario en localStorage");
           navigate('/login');
           return;
         }
         
-        // Obtener nombre de usuario y nombre completo si existe
+        // Obtener datos del usuario
         const username = localStorage.getItem('username') || 'Usuario';
         const nombreCompleto = localStorage.getItem('userNombre') || username;
-        
-        // Obtener email (si existe)
         const email = localStorage.getItem('userEmail') || '';
+        const rol = localStorage.getItem('userRole') || 'capturista';
         
-        // Obtener rol del usuario - Adaptado a tu implementación actual
-        const rol = localStorage.getItem('userRole') || 'capturista'; // Por defecto rol mínimo
-        
-        // Obtener iniciales para avatar
         const obtenerIniciales = (nombre) => {
           if (!nombre) return '?';
-          
           const partes = nombre.split(' ');
           if (partes.length > 1) {
             return (partes[0][0] + partes[1][0]).toUpperCase();
           }
-          
           return (nombre[0] || '?').toUpperCase();
         };
         
-        // Actualizar el estado del usuario actual
+        // Actualizar estado del usuario
         setCurrentUser({
           nombre: nombreCompleto,
           iniciales: obtenerIniciales(nombreCompleto),
@@ -114,23 +125,17 @@ const PanelLateral = () => {
           id: userId
         });
 
-        // Cargar los permisos del usuario
+        // Cargar permisos
         try {
-          // Intentamos obtener los permisos personalizados
           const permisosResponse = await PermisosController.obtenerPermisosUsuario(userId);
           
           if (permisosResponse.success) {
             setModulosPermitidos(permisosResponse.data || []);
             
             if (!usuarioYaInicializado) {
-              // Para jefes de departamento, iniciar en el dashboard de jefe si está disponible
               if (rol === 'jefe_departamento' && permisosResponse.data.includes('dashboard_jefe')) {
                 setActiveItem('dashboard_jefe');
-              }
-              // Si el usuario no tiene acceso al dashboard pero intenta acceder a él,
-              // redirigir a la primera opción disponible
-              else if (activeItem === 'dashboard' && !permisosResponse.data.includes('dashboard')) {
-                // Usar el primer módulo permitido
+              } else if (activeItem === 'dashboard' && !permisosResponse.data.includes('dashboard')) {
                 if (permisosResponse.data.length > 0) {
                   setActiveItem(permisosResponse.data[0]);
                 }
@@ -139,11 +144,9 @@ const PanelLateral = () => {
             }
           } else {
             console.error("Error al cargar permisos:", permisosResponse.error);
-            // Si hay error, usar los predeterminados del rol
             const permisosRol = PermisosController.obtenerPermisosModulos(rol);
             setModulosPermitidos(permisosRol);
             
-            // Redirigir si es necesario y no se ha inicializado
             if (!usuarioYaInicializado) {
               if (activeItem === 'dashboard' && !permisosRol.includes('dashboard')) {
                 if (permisosRol.length > 0) {
@@ -155,17 +158,34 @@ const PanelLateral = () => {
           }
         } catch (permisosError) {
           console.error("Error grave al cargar permisos:", permisosError);
-          // En caso de error crítico, utilizamos los permisos básicos del rol
           const permisosRol = PermisosController.obtenerPermisosModulos(rol);
           setModulosPermitidos(permisosRol);
           if (!usuarioYaInicializado) {
             setUsuarioYaInicializado(true);
           }
         }
+
+        // 🔔 CONFIGURAR NOTIFICACIONES SIMPLIFICADAS
+        try {
+          await NotificacionesController.solicitarPermisosNotificacion();
+          
+          console.log('🔔 Inicializando notificaciones con rol:', rol);
+          const resultado = NotificacionesController.inicializar(manejarNuevaNotificacion, rol);
+          
+          if (resultado.success) {
+            setNotificaciones(NotificacionesController.obtenerNotificaciones());
+            setContadorNotificaciones(NotificacionesController.obtenerContadorNoLeidas());
+            console.log('✅ Notificaciones configuradas');
+            
+            // DEBUGGING: Mostrar estado del sistema
+            console.log('🔍 Estado del sistema:', NotificacionesController.obtenerEstado());
+          }
+        } catch (notifError) {
+          console.error('Error al configurar notificaciones:', notifError);
+        }
         
       } catch (error) {
         console.error("Error al cargar información del usuario:", error);
-        // En caso de error general, usamos datos básicos
         const username = localStorage.getItem('username') || 'Usuario';
         const rol = localStorage.getItem('userRole') || 'capturista';
         
@@ -177,7 +197,6 @@ const PanelLateral = () => {
           id: null
         });
         
-        // Cargar permisos predeterminados
         const permisosBasicos = PermisosController.obtenerPermisosModulos(rol);
         setModulosPermitidos(permisosBasicos);
       } finally {
@@ -186,10 +205,22 @@ const PanelLateral = () => {
     };
     
     cargarUsuario();
+    
+    // Cleanup al desmontar el componente
+    return () => {
+      NotificacionesController.removerCallback(manejarNuevaNotificacion);
+    };
   }, [navigate, activeItem, usuarioYaInicializado]);
 
+  // Toggle notificaciones SIN auto-marcar
+  const toggleNotificaciones = () => {
+    setMostrarNotificaciones(!mostrarNotificaciones);
+    
+    // REMOVIDO: No marcar automáticamente como leídas
+    // Solo abrir/cerrar el panel
+  };
+
   const handleItemClick = (id) => {
-    // Verificar que el módulo esté disponible antes de cambiar
     if (modulosPermitidos.includes(id)) {
       setActiveItem(id);
       console.log("Cambiando a módulo:", id);
@@ -202,14 +233,15 @@ const PanelLateral = () => {
     setShowSidebar(!showSidebar);
   };
   
-  // Función para manejar el cierre de sesión
   const handleLogout = async () => {
     try {
-      // Mostrar confirmación antes de cerrar sesión
       const confirmar = window.confirm('¿Estás seguro que deseas cerrar sesión?');
       if (!confirmar) return;
       
-      // Limpiar localStorage para cerrar sesión
+      // Destruir sistema de notificaciones
+      NotificacionesController.destruir();
+      
+      // Limpiar localStorage
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('username');
       localStorage.removeItem('userId');
@@ -217,7 +249,6 @@ const PanelLateral = () => {
       localStorage.removeItem('userNombre');
       localStorage.removeItem('userEmail');
       
-      // Redireccionar a la página de inicio de sesión
       navigate('/login');
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
@@ -225,25 +256,23 @@ const PanelLateral = () => {
     }
   };
 
-  // Items del menú completo - ACTUALIZADO CON REPORTES ESPECÍFICOS
+  // Items del menú
   const allMenuItems = [
     { id: 'dashboard', icon: icons.home, label: 'Panel Administrativo' },
     { id: 'dashboard_jefe', icon: icons.dashboard, label: 'Dashboard Departamentos' },
-    { id: 'users', icon: icons.users, label: 'Registrar Usuario' },
+    { id: 'users', icon: icons.user, label: 'Registrar Usuario' },
     { id: 'reports', icon: icons.report, label: 'Registrar Reporte' },
     { id: 'admin_reports', icon: icons.report, label: 'Gestión de Reportes' },
     { id: 'analytics', icon: icons.analytics, label: 'Estadísticas' },
     { id: 'admin_users', icon: icons.users, label: 'Admin. Usuarios' },
     { id: 'admin_permisos', icon: icons.permisos, label: 'Gestión de Permisos' },
     { id: 'admin_brigadas', icon: icons.brigadas, label: 'Gestión de Brigadas' },
-    // NUEVOS ITEMS DE REPORTES ESPECÍFICOS
     { id: 'reportes_alumbrado', icon: icons.alumbrado, label: 'Reportes de Alumbrado' },
     { id: 'reportes_bacheo', icon: icons.bacheo, label: 'Reportes de Bacheo' },
     { id: 'reportes_basura', icon: icons.basura, label: 'Reportes de Basura' },
     { id: 'reportes_drenaje', icon: icons.drenaje, label: 'Reportes de Drenaje' },
   ];
 
-  // Filtrar menú según los módulos permitidos
   const menuItems = allMenuItems.filter(item => {
     return modulosPermitidos.includes(item.id);
   });
@@ -259,18 +288,14 @@ const PanelLateral = () => {
     };
 
     handleResize();
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Renderiza el contenido según la opción seleccionada y el rol del usuario
   const renderContent = () => {
     console.log("Renderizando contenido con activeItem:", activeItem);
     
-    // Verificar si el usuario tiene permiso para ver esta sección
     if (!modulosPermitidos.includes(activeItem)) {
-      // Redirigir a la primera opción disponible para su rol
       if (modulosPermitidos.length > 0) {
         setActiveItem(modulosPermitidos[0]);
       }
@@ -282,7 +307,6 @@ const PanelLateral = () => {
       );
     }
 
-    // Si estamos en el dashboard, mostrar la vista según el rol del usuario
     if (activeItem === 'dashboard') {
       switch (currentUser.rol) {
         case 'basura':
@@ -294,12 +318,10 @@ const PanelLateral = () => {
         case 'drenaje':
           return <ReportesDrenaje />;
         default:
-          // Para otros roles (admin, jefe_departamento, etc.) mostrar el panel de basura como predeterminado
           return <ReportesBasura />;
       }
     }
 
-    // Para las otras opciones del menú, seguir con el comportamiento normal
     switch (activeItem) {
       case 'users':
         return <RegistroUsuarios />;
@@ -317,7 +339,6 @@ const PanelLateral = () => {
         return <GestionBrigadas />;
       case 'dashboard_jefe':
         return <DashboardJefeDepartamento />;
-      // NUEVOS CASOS PARA REPORTES ESPECÍFICOS
       case 'reportes_alumbrado':
         return <ReportesAlumbrado />;
       case 'reportes_bacheo':
@@ -362,14 +383,94 @@ const PanelLateral = () => {
           </button>
         </div>
 
+        {/* PANEL DE NOTIFICACIONES SIMPLIFICADO */}
         <div className={`notifications-container ${expanded ? '' : 'hidden'}`}>
-          <div className="notifications-box">
+          <div 
+            className="notifications-box"
+            onClick={toggleNotificaciones}
+          >
             <div className="notifications-title">
               <span className="notification-icon">{icons.bell}</span>
               <span className="notification-label">Notificaciones</span>
             </div>
-            <div className="notification-badge">5</div>
+            {contadorNotificaciones > 0 && (
+              <div className="notification-badge">
+                {contadorNotificaciones > 99 ? '99+' : contadorNotificaciones}
+              </div>
+            )}
           </div>
+          
+          {/* PANEL DESPLEGABLE SIMPLIFICADO */}
+          {mostrarNotificaciones && (
+            <div className="notifications-dropdown">
+              <div className="notifications-header">
+                <h4>Notificaciones</h4>
+                <button 
+                  className="btn-cerrar-notif"
+                  onClick={() => setMostrarNotificaciones(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="notifications-list">
+                {notificaciones.length === 0 ? (
+                  <div className="notification-empty">
+                    <span>📭</span>
+                    <p>No hay notificaciones</p>
+                  </div>
+                ) : (
+                  notificaciones.slice(0, 10).map((notif) => (
+                    <div 
+                      key={notif.id} 
+                      className={`notification-item ${!notif.leida ? 'no-leida' : ''}`}
+                    >
+                      <div className="notif-icon">
+                        {getIconoCategoria(notif.categoria || notif.reporte?.categoria)}
+                      </div>
+                      <div className="notif-content">
+                        <div className="notif-title">{notif.titulo}</div>
+                        <div className="notif-message">
+                          📍 {notif.mensaje}
+                        </div>
+                        <div className="notif-time">
+                          {formatearTiempo(notif.fecha)}
+                        </div>
+                      </div>
+                      
+                      {/* LA PALOMITA QUE QUERÍAS */}
+                      {!notif.leida && (
+                        <button 
+                          className="btn-marcar-leida"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            NotificacionesController.marcarComoLeida(notif.id);
+                          }}
+                          title="Marcar como leída"
+                        >
+                          ✓
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              {notificaciones.length > 0 && (
+                <div className="notifications-footer">
+                  <button 
+                    className="btn-marcar-todas"
+                    onClick={() => {
+                      NotificacionesController.marcarTodasComoLeidas();
+                      setMostrarNotificaciones(false);
+                    }}
+                  >
+                    Marcar todas como leídas
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <nav className="sidebar-menu">
@@ -432,11 +533,55 @@ const PanelLateral = () => {
           {renderContent()}
         </div>
       </div>
+
+
     </div>
   );
 };
 
-// Función auxiliar para obtener el nombre del rol utilizando el controlador
+// Función auxiliar para obtener icono de categoría
+function getIconoCategoria(categoria) {
+  const iconos = {
+    // Alumbrado
+    'Alumbrado Público': '💡',
+    'Alumbrado': '💡',
+    // Bacheo
+    'Bacheo': '🛣️',
+    'Baches': '🛣️',
+    // Basura
+    'Basura Acumulada': '🗑️',
+    'Basura': '🗑️',
+    // Drenaje (todas las variaciones)
+    'Drenaje Obstruido': '💧',
+    'Drenajes Obstruidos': '💧',
+    'Drenaje': '💧',
+    'Drenajes': '💧'
+  };
+  return iconos[categoria] || '📝';
+}
+
+// Función auxiliar para formatear tiempo relativo
+function formatearTiempo(fecha) {
+  const ahora = new Date();
+  const tiempo = new Date(fecha);
+  const diff = ahora - tiempo;
+  
+  const minutos = Math.floor(diff / 60000);
+  const horas = Math.floor(diff / 3600000);
+  const dias = Math.floor(diff / 86400000);
+  
+  if (minutos < 1) return 'Ahora';
+  if (minutos < 60) return `Hace ${minutos}m`;
+  if (horas < 24) return `Hace ${horas}h`;
+  if (dias < 7) return `Hace ${dias}d`;
+  
+  return tiempo.toLocaleDateString('es-MX', { 
+    month: 'short', 
+    day: 'numeric' 
+  });
+}
+
+// Función auxiliar para obtener el nombre del rol
 function getRoleName(rolId) {
   return PermisosController.obtenerNombreRol(rolId);
 }
