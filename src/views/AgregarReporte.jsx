@@ -186,10 +186,6 @@ const AgregarReporte = () => {
         return;
       }
       
-      // Si no hay resultados en el primer intento, probar con variaciones
-      // [resto del código de esta sección sin cambios]
-      // ...
-      
     } catch (error) {
       console.error("Error en geocoding:", error);
     } finally {
@@ -210,7 +206,7 @@ const AgregarReporte = () => {
     obtenerDireccionDesdeCoordenadas(lat, lng);
   };
 
-  // Obtener dirección desde coordenadas - CORREGIDO PARA MEJORAR FORMATO
+  // Obtener dirección desde coordenadas 
   const obtenerDireccionDesdeCoordenadas = async (lat, lng) => {
     try {
       // Usamos Nominatim API para geocodificación inversa con zoom alto para detalles de calle

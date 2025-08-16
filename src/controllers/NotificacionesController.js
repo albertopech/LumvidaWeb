@@ -1,4 +1,4 @@
-// src/controllers/NotificacionesController.js - VERSION SUPER SIMPLE
+// src/controllers/NotificacionesController.js - VERSION CORREGIDA COMPLETA
 import { collection, onSnapshot, query, limit, orderBy } from 'firebase/firestore';
 import { db } from '../models/firebase';
 
@@ -9,7 +9,7 @@ export class NotificacionesController {
   static reportesYaProcesados = new Set(); // Para evitar duplicados
   
   /**
-   * Inicializar - Solo escuchar nuevos reportes
+   * Inicializar - Solo escuchar nuevos reportes CON VALIDACIÓN ULTRA ESTRICTA
    */
   static inicializar(onNewNotification, userRole = '') {
     try {
@@ -19,11 +19,27 @@ export class NotificacionesController {
         this.destruir();
       }
       
+      // ✅ VALIDACIÓN ULTRA ESTRICTA: Solo 4 departamentos reciben notificaciones
+      const rolesDepartamentalesPermitidos = ['basura', 'alumbrado', 'bacheo', 'drenaje'];
+      if (!rolesDepartamentalesPermitidos.includes(userRole)) {
+        console.log('🚫 Rol no departamental - NO inicializando notificaciones:', userRole);
+        
+        // Limpiar cualquier notificación existente
+        this.notificaciones = [];
+        this.reportesYaProcesados.clear();
+        localStorage.removeItem('notificaciones_reportes');
+        
+        return { 
+          success: true, 
+          message: 'Notificaciones deshabilitadas para este rol' 
+        };
+      }
+      
       this.callbacks.add(onNewNotification);
       this.escucharNuevosReportes(userRole);
       this.cargarNotificacionesGuardadas();
       
-      console.log('✅ Notificaciones iniciadas');
+      console.log('✅ Notificaciones iniciadas SOLO para rol departamental:', userRole);
       return { success: true };
     } catch (error) {
       console.error('❌ Error:', error);
@@ -63,14 +79,14 @@ export class NotificacionesController {
             fechaParsed: this.parsearFecha(reporte.fecha)
           });
           
-          // FILTRAR POR ROL DE USUARIO PRIMERO
+          // ✅ FILTRAR POR ROL DE USUARIO ULTRA ESTRICTO
           if (!this.esReporteRelevante(reporte.categoria, userRole)) {
             console.log('❌ Reporte no relevante para el rol:', userRole);
             this.reportesYaProcesados.add(reporte.id); // Marcar como procesado
             return;
           }
           
-          // Solo procesar si es muy reciente (menos de 1 hora)
+          // Solo procesar si es muy reciente (menos de 5 minutos)
           const fechaReporte = this.parsearFecha(reporte.fecha);
           const tiempoTranscurrido = Date.now() - fechaReporte.getTime();
           
@@ -79,7 +95,7 @@ export class NotificacionesController {
           // Marcar como procesado ANTES de crear notificación
           this.reportesYaProcesados.add(reporte.id);
           
-          if (tiempoTranscurrido < 300000) { // Menos de 5 MINUTOS = nuevo (reducido de 1 hora)
+          if (tiempoTranscurrido < 300000) { // Menos de 5 MINUTOS = nuevo
             console.log('✅ Procesando reporte nuevo');
             this.crearNotificacion(reporte);
           } else {
@@ -124,7 +140,7 @@ export class NotificacionesController {
             direccion: reporte.direccion
           });
           
-          // FILTRAR POR ROL DE USUARIO
+          // ✅ FILTRAR POR ROL DE USUARIO ULTRA ESTRICTO
           if (!this.esReporteRelevante(reporte.categoria, userRole)) {
             console.log('❌ Reporte no relevante para el rol:', userRole);
             this.reportesYaProcesados.add(reporte.id); // Marcar como procesado
@@ -156,12 +172,19 @@ export class NotificacionesController {
   }
 
   /**
-   * Verificar si el reporte es relevante para el rol del usuario
+   * ✅ VERIFICACIÓN ULTRA ESTRICTA: Solo 4 departamentos reciben notificaciones
    */
   static esReporteRelevante(categoriaReporte, userRole) {
-    // Si es admin o jefe, ver todos los reportes
-    if (userRole === 'admin' || userRole === 'jefe_departamento') {
-      return true;
+    console.log('🔍 Verificando relevancia ULTRA ESTRICTA para:', { userRole, categoriaReporte });
+    
+    // ❌ REMOVIDO: Los administradores YA NO reciben notificaciones
+    // SOLO estos 4 roles departamentales reciben notificaciones
+    const rolesDepartamentalesPermitidos = ['basura', 'alumbrado', 'bacheo', 'drenaje'];
+    
+    // Si NO es uno de los 4 departamentos, NO recibe notificaciones
+    if (!rolesDepartamentalesPermitidos.includes(userRole)) {
+      console.log('❌ Rol NO departamental - Sin notificaciones:', userRole);
+      return false;
     }
     
     // FILTRADO ESTRICTO POR DEPARTAMENTO
@@ -176,7 +199,7 @@ export class NotificacionesController {
     const categoriasPermitidas = rolesCategorias[userRole] || [];
     const esRelevante = categoriasPermitidas.includes(categoriaReporte);
     
-    console.log('🔍 Verificando relevancia ESTRICTA:', {
+    console.log('🔍 Verificando relevancia departamental ULTRA ESTRICTA:', {
       userRole,
       categoriaReporte,
       categoriasPermitidas,
@@ -440,19 +463,18 @@ export class NotificacionesController {
   }
 
   /**
-   * Marcar todas como leídas y REMOVERLAS del panel
+   * ✅ CORREGIDO: Marcar todas como leídas y REMOVERLAS completamente
    */
   static marcarTodasComoLeidas() {
-    console.log('🧹 Marcando todas como leídas y removiendo del panel');
+    console.log('🧹 Marcando todas como leídas y removiendo del panel COMPLETAMENTE');
     
-    // Opción 1: Remover todas las notificaciones
+    // Remover todas las notificaciones del array
     this.notificaciones = [];
     
-    // Opción 2: Si prefieres solo marcarlas como leídas sin remover:
-    // this.notificaciones.forEach(n => n.leida = true);
-    
+    // Limpiar localStorage completamente
     this.guardarNotificaciones();
     
+    // Notificar a todos los callbacks del cambio
     this.callbacks.forEach(callback => {
       try {
         callback(null, { tipo: 'actualizar_contador' });
@@ -461,7 +483,7 @@ export class NotificacionesController {
       }
     });
     
-    console.log('✅ Todas las notificaciones removidas del panel');
+    console.log('✅ Todas las notificaciones removidas del panel y localStorage');
   }
 
   /**
@@ -476,19 +498,49 @@ export class NotificacionesController {
   }
 
   /**
-   * Cargar del localStorage
+   * ✅ CORREGIDO: Cargar del localStorage CON FILTRADO POR ROL
    */
   static cargarNotificacionesGuardadas() {
     try {
       const stored = localStorage.getItem('notificaciones_reportes');
       if (stored) {
-        this.notificaciones = JSON.parse(stored).map(n => ({
+        const notificacionesGuardadas = JSON.parse(stored).map(n => ({
           ...n,
           fecha: new Date(n.fecha)
         }));
+        
+        // ✅ NUEVO: Filtrar las notificaciones guardadas según el rol actual
+        const userRole = localStorage.getItem('userRole');
+        const rolesDepartamentales = ['basura', 'alumbrado', 'bacheo', 'drenaje'];
+        
+        if (!rolesDepartamentales.includes(userRole)) {
+          console.log('🚫 Rol no departamental - Limpiando notificaciones guardadas:', userRole);
+          // Si el rol actual no debe recibir notificaciones, limpiar el localStorage
+          localStorage.removeItem('notificaciones_reportes');
+          this.notificaciones = [];
+          return;
+        }
+        
+        // Filtrar notificaciones por relevancia del rol actual
+        const notificacionesFiltradas = notificacionesGuardadas.filter(notif => {
+          if (!notif.reporte || !notif.reporte.categoria) return false;
+          return this.esReporteRelevante(notif.reporte.categoria, userRole);
+        });
+        
+        this.notificaciones = notificacionesFiltradas;
+        
+        // Si algunas notificaciones fueron filtradas, actualizar el localStorage
+        if (notificacionesFiltradas.length !== notificacionesGuardadas.length) {
+          this.guardarNotificaciones();
+        }
+        
+        console.log(`📱 Notificaciones cargadas y filtradas: ${notificacionesFiltradas.length}/${notificacionesGuardadas.length} para rol: ${userRole}`);
       }
     } catch (error) {
-      console.error('Error al cargar:', error);
+      console.error('Error al cargar notificaciones:', error);
+      // En caso de error, limpiar completamente
+      localStorage.removeItem('notificaciones_reportes');
+      this.notificaciones = [];
     }
   }
 
@@ -506,6 +558,28 @@ export class NotificacionesController {
   }
 
   /**
+   * ✅ NUEVO: Limpiar notificaciones por cambio de rol
+   */
+  static limpiarNotificacionesPorCambioRol() {
+    console.log('🧹 Limpiando notificaciones por cambio de rol');
+    
+    this.notificaciones = [];
+    this.reportesYaProcesados.clear();
+    localStorage.removeItem('notificaciones_reportes');
+    
+    // Avisar a los callbacks del cambio
+    this.callbacks.forEach(callback => {
+      try {
+        callback(null, { tipo: 'actualizar_contador' });
+      } catch (error) {
+        console.error('Error en callback:', error);
+      }
+    });
+    
+    console.log('✅ Notificaciones limpiadas por cambio de rol');
+  }
+
+  /**
    * Limpiar todo
    */
   static destruir() {
@@ -514,7 +588,7 @@ export class NotificacionesController {
     }
     this.callbacks.clear();
     this.notificaciones = [];
-    this.reportesYaProcesados.clear(); // Limpiar reportes procesados
+    this.reportesYaProcesados.clear();
     console.log('🧹 Notificaciones destruidas');
   }
 
@@ -561,7 +635,8 @@ export class NotificacionesController {
       listener: this.listener ? 'Activo' : 'Inactivo',
       callbacks: this.callbacks.size,
       notificaciones: this.notificaciones.length,
-      ultimaNotificacion: this.notificaciones[0] || null
+      ultimaNotificacion: this.notificaciones[0] || null,
+      reportesProcesados: this.reportesYaProcesados.size
     };
   }
 }
