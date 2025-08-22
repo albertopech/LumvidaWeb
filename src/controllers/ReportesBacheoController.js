@@ -16,6 +16,8 @@ export class ReportesBacheoController {
    */
   static async cargarReportes() {
     try {
+      console.log("🔍 Iniciando carga de reportes de bacheo...");
+      
       const reportesRef = collection(db, "reportes");
       
       // Primero intentamos con orderBy, si falla usamos query simple
@@ -26,19 +28,32 @@ export class ReportesBacheoController {
           where("categoria", "==", CATEGORIAS.BACHEO),
           orderBy("fecha", "desc") // Ordenar por fecha descendente
         );
+        console.log("📝 Query con orderBy configurada");
         querySnapshot = await getDocs(q);
       } catch (indexError) {
         console.warn("Índice no disponible, usando query simple:", indexError.message);
         // Fallback: query sin orderBy
         const q = query(reportesRef, where("categoria", "==", CATEGORIAS.BACHEO));
+        console.log("📝 Query simple configurada");
         querySnapshot = await getDocs(q);
       }
       
+      console.log("📊 Documentos encontrados:", querySnapshot.size);
+      
       const reportesData = [];
       querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log("📄 Documento procesado:", doc.id, {
+          categoria: data.categoria,
+          estado: data.estado,
+          fecha: data.fecha,
+          imagenes: data.imagenes ? `${data.imagenes.length} imágenes` : 'Sin imágenes',
+          foto: data.foto ? 'Tiene foto' : 'Sin foto'
+        });
+        
         reportesData.push({
           id: doc.id,
-          ...doc.data()
+          ...data
         });
       });
       
@@ -49,15 +64,59 @@ export class ReportesBacheoController {
         return fechaB - fechaA; // Descendente (más nuevos primero)
       });
       
-      console.log("Reportes de bacheo cargados:", reportesData.length);
+      console.log("✅ Reportes de bacheo cargados:", reportesData.length);
       return { success: true, data: reportesData };
     } catch (error) {
-      console.error("Error al cargar reportes:", error);
+      console.error("❌ Error al cargar reportes:", error);
       return { 
         success: false, 
         error: "Error al cargar los reportes. Por favor, intenta de nuevo." 
       };
     }
+  }
+
+  /**
+   * Obtener la URL de la imagen principal del reporte
+   * Maneja tanto el campo 'imagenes' (array) como 'foto' (string) para compatibilidad
+   */
+  static obtenerImagenPrincipal(reporte) {
+    // Priorizar el campo 'imagenes' (estructura actual)
+    if (reporte.imagenes && Array.isArray(reporte.imagenes) && reporte.imagenes.length > 0) {
+      return reporte.imagenes[0];
+    }
+    
+    // Fallback al campo 'foto' para compatibilidad con versiones anteriores
+    if (reporte.foto) {
+      return reporte.foto;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Verificar si el reporte tiene imágenes
+   */
+  static tieneImagenes(reporte) {
+    return this.obtenerImagenPrincipal(reporte) !== null;
+  }
+
+  /**
+   * Obtener todas las imágenes del reporte
+   */
+  static obtenerTodasLasImagenes(reporte) {
+    const imagenes = [];
+    
+    // Agregar imágenes del array 'imagenes'
+    if (reporte.imagenes && Array.isArray(reporte.imagenes)) {
+      imagenes.push(...reporte.imagenes);
+    }
+    
+    // Agregar imagen del campo 'foto' si existe y no está ya en el array
+    if (reporte.foto && !imagenes.includes(reporte.foto)) {
+      imagenes.push(reporte.foto);
+    }
+    
+    return imagenes;
   }
 
   /**
@@ -245,8 +304,9 @@ export class ReportesBacheoController {
         yPos += (lineHeight * commentLines.length);
       }
       
-      // Agregar imagen si existe
-      if (reporte.foto) {
+      // Agregar imagen si existe (usando la nueva función)
+      const imagenPrincipal = this.obtenerImagenPrincipal(reporte);
+      if (imagenPrincipal) {
         try {
           yPos += lineHeight * 2;
           
@@ -259,7 +319,8 @@ export class ReportesBacheoController {
             yPos = 30;
           }
           
-          pdf.addImage(reporte.foto, 'JPEG', 15, yPos, 180, 100);
+          // Usar la imagen principal
+          pdf.addImage(imagenPrincipal, 'JPEG', 15, yPos, 180, 100);
         } catch (imgError) {
           console.error("Error al agregar imagen al PDF:", imgError);
           pdf.setFont("helvetica", "normal");

@@ -881,3 +881,49 @@
 .btn-marcar-todas:hover {
   background: #2563eb;
 }
+
+/* FONDO GLOBAL PARA TODAS LAS VISTAS */
+body {
+  background-image: url('../../assets/Fondo.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+/* Hacer transparentes todos los contenedores */
+.main-content,
+.content-container,
+.registro-container,
+.reportes-app,
+.estadisticas-container,
+.gestion-reportes-container,
+.admin-usuarios-container {
+  background: transparent !important;
+}
+
+/* Tarjetas semitransparentes */
+.registro-card,
+.login-card,
+.reporte-card,
+.panel-admin,
+.modal-container {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(5px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  padding: 8px 0;
+}
+
+.app-logo {
+  height: 32px;
+  width: auto;
+  margin-right: 12px;
+}

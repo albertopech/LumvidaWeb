@@ -60,6 +60,72 @@ const EstadoTag = ({ estado }) => {
   );
 };
 
+// Componente para mostrar galería de imágenes
+const GaleriaImagenes = ({ reporte }) => {
+  const [imagenActiva, setImagenActiva] = useState(0);
+  const todasLasImagenes = ReportesBacheoController.obtenerTodasLasImagenes(reporte);
+  
+  if (!todasLasImagenes || todasLasImagenes.length === 0) {
+    return null;
+  }
+  
+  return (
+    <div className="reporte-foto">
+      <h3>
+        {todasLasImagenes.length === 1 ? 'Imagen del reporte' : `Imágenes del reporte (${todasLasImagenes.length})`}
+      </h3>
+      <div className="foto-container">
+        <img 
+          src={todasLasImagenes[imagenActiva]} 
+          alt={`Imagen ${imagenActiva + 1} del reporte`} 
+          onError={(e) => {
+            console.error("Error al cargar imagen:", e);
+            e.target.style.display = 'none';
+          }}
+        />
+        
+        {/* Controles de navegación para múltiples imágenes */}
+        {todasLasImagenes.length > 1 && (
+          <div className="controles-galeria">
+            <button 
+              className="btn-nav-imagen anterior"
+              onClick={() => setImagenActiva(imagenActiva > 0 ? imagenActiva - 1 : todasLasImagenes.length - 1)}
+              title="Imagen anterior"
+            >
+              <i className="fas fa-chevron-left"></i>
+            </button>
+            
+            <div className="indicadores-imagen">
+              {todasLasImagenes.map((_, index) => (
+                <span 
+                  key={index}
+                  className={`indicador ${index === imagenActiva ? 'activo' : ''}`}
+                  onClick={() => setImagenActiva(index)}
+                />
+              ))}
+            </div>
+            
+            <button 
+              className="btn-nav-imagen siguiente"
+              onClick={() => setImagenActiva(imagenActiva < todasLasImagenes.length - 1 ? imagenActiva + 1 : 0)}
+              title="Siguiente imagen"
+            >
+              <i className="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        )}
+        
+        {/* Contador de imágenes */}
+        {todasLasImagenes.length > 1 && (
+          <div className="contador-imagenes">
+            {imagenActiva + 1} / {todasLasImagenes.length}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const ReportesBacheo = () => {
   // Estados del componente
   const [reportes, setReportes] = useState([]);
@@ -86,20 +152,28 @@ const ReportesBacheo = () => {
 
   const cargarDatosIniciales = async () => {
     setLoading(true);
+    setError(null);
+    
+    console.log("🔄 Iniciando carga de datos...");
     
     // Cargar reportes
     const resultadoReportes = await ReportesBacheoController.cargarReportes();
     if (resultadoReportes.success) {
+      console.log("✅ Reportes cargados exitosamente:", resultadoReportes.data.length);
       setReportes(resultadoReportes.data);
       setError(null);
     } else {
+      console.error("❌ Error al cargar reportes:", resultadoReportes.error);
       setError(resultadoReportes.error);
     }
     
     // Cargar brigadas
     const resultadoBrigadas = await ReportesBacheoController.cargarBrigadasDisponibles();
     if (resultadoBrigadas.success) {
+      console.log("✅ Brigadas cargadas:", resultadoBrigadas.data.length);
       setBrigadasDisponibles(resultadoBrigadas.data);
+    } else {
+      console.warn("⚠️ No se pudieron cargar las brigadas:", resultadoBrigadas.error);
     }
     
     setLoading(false);
@@ -571,7 +645,7 @@ const ReportesBacheo = () => {
                     <i className="far fa-calendar-alt"></i>
                     <span>{ReportesBacheoController.formatearFecha(reporte.fecha)}</span>
                   </div>
-
+                  
                   {reporte.brigadaAsignada && (
                     <div className="report-brigada-asignada">
                       <i className="fas fa-users"></i>
@@ -736,14 +810,8 @@ const ReportesBacheo = () => {
                 )}
               </div>
               
-              {reporteSeleccionado.foto && (
-                <div className="reporte-foto">
-                  <h3>Imagen del reporte</h3>
-                  <div className="foto-container">
-                    <img src={reporteSeleccionado.foto} alt="Imagen del reporte" />
-                  </div>
-                </div>
-              )}
+              {/* Galería de imágenes actualizada */}
+              <GaleriaImagenes reporte={reporteSeleccionado} />
             </div>
             
             <div className="reporte-modal-footer">

@@ -1,6 +1,7 @@
 // src/views/DashboardJefeDepartamento.jsx
 import React, { useState, useEffect } from "react";
 import EstadisticasControllerExtendido from "../controllers/EstadisticasControllerExtendido";
+import ExportController from "../controllers/ExportController";
 import { 
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, 
   Legend, ResponsiveContainer
@@ -16,6 +17,7 @@ const DashboardJefeDepartamento = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [exportando, setExportando] = useState(false);
   
   // Estados para los filtros
   const [filtroDepartamento, setFiltroDepartamento] = useState('todos');
@@ -30,6 +32,7 @@ const DashboardJefeDepartamento = () => {
   const [tendenciasMensual, setTendenciasMensual] = useState([]);
   const [comparativoDepartamentos, setComparativoDepartamentos] = useState([]);
   const [vistaActual, setVistaActual] = useState('general');
+  const [mensajeExportacion, setMensajeExportacion] = useState(null);
   
   // Configuraciones adicionales
   const departamentos = [
@@ -151,6 +154,13 @@ const DashboardJefeDepartamento = () => {
   // Función principal para procesar datos
   const procesarDatos = (datos) => {
     console.log("Procesando datos, total reportes:", datos.length);
+    console.log("📋 Reportes originales:", datos.map(r => ({
+      id: r.id,
+      categoria: r.categoria,
+      estado: r.estado || r.estatus,
+      fechaObj: r.fechaObj,
+      fechaStr: r.fechaObj ? r.fechaObj.toISOString().split('T')[0] : 'Sin fecha'
+    })));
     
     let reportesFiltrados = [...datos];
     
@@ -160,9 +170,19 @@ const DashboardJefeDepartamento = () => {
       const fechaFin = new Date(filtroFechaFin);
       fechaFin.setHours(23, 59, 59);
       
-      reportesFiltrados = reportesFiltrados.filter(reporte => {
-        return reporte.fechaObj >= fechaInicio && reporte.fechaObj <= fechaFin;
+      console.log("🗓️ Aplicando filtro de fechas:", {
+        inicio: fechaInicio.toISOString(),
+        fin: fechaFin.toISOString()
       });
+      
+      const antesDelFiltro = reportesFiltrados.length;
+      reportesFiltrados = reportesFiltrados.filter(reporte => {
+        const resultado = reporte.fechaObj >= fechaInicio && reporte.fechaObj <= fechaFin;
+        console.log(`Fecha reporte ${reporte.id}: ${reporte.fechaObj?.toISOString()} -> ${resultado ? 'INCLUIDO' : 'EXCLUIDO'}`);
+        return resultado;
+      });
+      
+      console.log(`Después del filtro de fechas: ${antesDelFiltro} -> ${reportesFiltrados.length}`);
     }
     
     // Filtro por departamento
@@ -204,7 +224,185 @@ const DashboardJefeDepartamento = () => {
     procesarTendenciasMensual(reportesFiltrados);
     procesarComparativoDepartamentos(reportesFiltrados);
   };
+
+  // Función para exportar todos los datos a Excel
+  const exportarDashboardCompleto = async () => {
+    try {
+      setExportando(true);
+      setMensajeExportacion("Preparando datos para exportación...");
+      
+      // Aplicar los mismos filtros que se usan en procesarDatos
+      let reportesFiltrados = [...reportes];
+      
+      console.log('🔍 Debug exportación - Reportes antes de filtros:', reportes.map(r => ({
+        id: r.id,
+        categoria: r.categoria,
+        estado: r.estado || r.estatus,
+        fechaObj: r.fechaObj,
+        fechaFormateada: r.fechaObj ? r.fechaObj.toISOString().split('T')[0] : 'Sin fecha'
+      })));
+      
+      // Filtro por fechas
+      if (filtroFechaInicio && filtroFechaFin) {
+        const fechaInicio = new Date(filtroFechaInicio + 'T00:00:00.000Z');
+        const fechaFin = new Date(filtroFechaFin + 'T23:59:59.999Z');
+        
+        console.log('🗓️ Filtros de fecha:', {
+          fechaInicio: fechaInicio.toISOString(),
+          fechaFin: fechaFin.toISOString(),
+          filtroFechaInicio,
+          filtroFechaFin
+        });
+        
+        const reportesAntesDelFiltro = reportesFiltrados.length;
+        reportesFiltrados = reportesFiltrados.filter(reporte => {
+          const dentroDelRango = reporte.fechaObj >= fechaInicio && reporte.fechaObj <= fechaFin;
+          console.log(`📅 Reporte ${reporte.id}: ${reporte.fechaObj?.toISOString()} -> ${dentroDelRango ? 'INCLUIDO' : 'EXCLUIDO'}`);
+          return dentroDelRango;
+        });
+        
+        console.log(`📊 Filtro por fechas: ${reportesAntesDelFiltro} -> ${reportesFiltrados.length}`);
+      }
+      
+      // Filtro por departamento
+      if (filtroDepartamento !== 'todos') {
+        const mapeoCategoriasAValoresReales = {
+          'basura': 'Basura Acumulada',
+          'alumbrado': 'Alumbrado Público',
+          'drenaje': 'Drenajes Obstruidos',
+          'bacheo': 'Bacheo'
+        };
+        
+        const categoriaABuscar = mapeoCategoriasAValoresReales[filtroDepartamento];
+        console.log(`🏢 Filtro departamento: buscando '${categoriaABuscar}'`);
+        
+        const reportesAntesDelFiltro = reportesFiltrados.length;
+        reportesFiltrados = reportesFiltrados.filter(reporte => {
+          const coincide = reporte.categoria === categoriaABuscar;
+          console.log(`🏢 Reporte ${reporte.id} categoria '${reporte.categoria}' -> ${coincide ? 'INCLUIDO' : 'EXCLUIDO'}`);
+          return coincide;
+        });
+        
+        console.log(`📊 Filtro por departamento: ${reportesAntesDelFiltro} -> ${reportesFiltrados.length}`);
+      }
+      
+      // Filtro por estatus
+      if (filtroEstatus !== 'todos') {
+        console.log(`📋 Filtro estatus: buscando '${filtroEstatus}'`);
+        
+        const reportesAntesDelFiltro = reportesFiltrados.length;
+        reportesFiltrados = reportesFiltrados.filter(reporte => {
+          const estadoReporte = reporte.estatus || reporte.estado || 'pendiente';
+          
+          let coincide = false;
+          if (filtroEstatus === 'en_proceso' && (estadoReporte === 'en proceso' || estadoReporte === 'en_proceso')) {
+            coincide = true;
+          } else if (filtroEstatus === 'resuelto' && (estadoReporte === 'resuelto' || estadoReporte === 'completado')) {
+            coincide = true;
+          } else {
+            coincide = estadoReporte === filtroEstatus;
+          }
+          
+          console.log(`📋 Reporte ${reporte.id} estatus '${estadoReporte}' -> ${coincide ? 'INCLUIDO' : 'EXCLUIDO'}`);
+          return coincide;
+        });
+        
+        console.log(`📊 Filtro por estatus: ${reportesAntesDelFiltro} -> ${reportesFiltrados.length}`);
+      }
+      
+      console.log('✅ Reportes finales después de filtros:', reportesFiltrados.map(r => ({
+        id: r.id,
+        categoria: r.categoria,
+        estado: r.estado || r.estatus,
+        fecha: r.fechaObj?.toISOString().split('T')[0]
+      })));
+      
+      // Preparar datos para exportación
+      const datosExportacion = {
+        resumenesDepartamentos,
+        tiemposResolucion,
+        tendenciasSemanal,
+        tendenciasMensual,
+        comparativoDepartamentos,
+        reportesRaw: reportes, // Todos los reportes sin filtrar para referencia
+        reportesFiltrados: reportesFiltrados, // Los reportes que realmente se están mostrando
+        filtrosAplicados: {
+          'Ciudad': ciudadActual,
+          'Departamento': departamentos.find(d => d.id === filtroDepartamento)?.nombre || 'Todos',
+          'Fecha Inicio': filtroFechaInicio || 'Sin límite',
+          'Fecha Fin': filtroFechaFin || 'Sin límite',
+          'Estatus': estatus.find(e => e.id === filtroEstatus)?.nombre || 'Todos'
+          // Eliminamos los totales que causan confusión
+        }
+      };
+      
+      console.log('📊 Datos para exportación:', {
+        totalFiltrado: reportesFiltrados.length,
+        filtros: {
+          fechaInicio: filtroFechaInicio,
+          fechaFin: filtroFechaFin,
+          departamento: filtroDepartamento,
+          estatus: filtroEstatus
+        }
+      });
+      
+      setMensajeExportacion("Generando archivo Excel...");
+      
+      const resultado = await ExportController.exportarDashboardAExcel(
+        datosExportacion,
+        `dashboard_${ciudadActual}_${filtroDepartamento}`
+      );
+      
+      if (resultado.success) {
+        setMensajeExportacion(resultado.mensaje);
+        setTimeout(() => setMensajeExportacion(null), 4000);
+      } else {
+        setMensajeExportacion(resultado.error);
+        setTimeout(() => setMensajeExportacion(null), 4000);
+      }
+      
+    } catch (error) {
+      console.error('Error durante la exportación:', error);
+      setMensajeExportacion('Error al exportar. Intente nuevamente.');
+      setTimeout(() => setMensajeExportacion(null), 4000);
+    } finally {
+      setExportando(false);
+    }
+  };
+
+  // Función para exportar gráfica específica
+  const exportarGraficaEspecifica = async (tipoGrafica, datos, nombreGrafica) => {
+    try {
+      setExportando(true);
+      setMensajeExportacion(`Exportando ${nombreGrafica}...`);
+      
+      const resultado = await ExportController.exportarGraficaEspecifica(
+        datos,
+        nombreGrafica,
+        tipoGrafica
+      );
+      
+      if (resultado.success) {
+        setMensajeExportacion(resultado.mensaje);
+        setTimeout(() => setMensajeExportacion(null), 3000);
+      } else {
+        setMensajeExportacion(resultado.error);
+        setTimeout(() => setMensajeExportacion(null), 3000);
+      }
+      
+    } catch (error) {
+      console.error('Error al exportar gráfica:', error);
+      setMensajeExportacion('Error al exportar gráfica. Intente nuevamente.');
+      setTimeout(() => setMensajeExportacion(null), 3000);
+    } finally {
+      setExportando(false);
+    }
+  };
   
+  // [Aquí van todas las funciones de procesamiento de datos que ya tienes]
+  // procesarResumenesDepartamentos, procesarTiemposResolucion, etc.
+  // Las mantengo igual que en tu código original...
+
   // Resúmenes por departamento
   const procesarResumenesDepartamentos = (datos) => {
     const departamentos = {
@@ -656,11 +854,6 @@ const DashboardJefeDepartamento = () => {
     setVistaActual(vista);
   };
   
-  // Función para exportar reportes
-  const exportarReportes = () => {
-    alert("Función de exportación a Excel se implementará próximamente");
-  };
-  
   // RENDERIZADO DE COMPONENTES
   
   // Render de comparativo de departamentos
@@ -673,58 +866,55 @@ const DashboardJefeDepartamento = () => {
     const maxPorcentaje = Math.max(...comparativoDepartamentos.map(dept => parseFloat(dept.porcentaje)));
     const maxTotal = Math.max(maxReportes, maxPorcentaje);
     
-    const generarTicks = (max) => {
-      const ticks = [];
-      const step = Math.ceil(max / 10);
-      for (let i = 0; i <= max + step; i += step) {
-        ticks.push(i);
-      }
-      comparativoDepartamentos.forEach(dept => {
-        if (!ticks.includes(dept.reportes)) ticks.push(dept.reportes);
-        if (!ticks.includes(dept.resueltos)) ticks.push(dept.resueltos);
-        const porcentaje = Math.round(parseFloat(dept.porcentaje));
-        if (!ticks.includes(porcentaje)) ticks.push(porcentaje);
-      });
-      return ticks.sort((a, b) => a - b);
-    };
-    
     return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={comparativoDepartamentos}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis 
-            label={{ value: 'Reportes / Porcentaje', angle: -90, position: 'insideLeft' }}
-            domain={[0, maxTotal + 5]}
-            ticks={generarTicks(maxTotal)}
-            allowDecimals={false}
-          />
-          <Tooltip 
-            formatter={(value, name, entry) => {
-              if (name === 'Porcentaje de Resolución') {
-                return [`${value}%`, name];
-              }
-              return [`${value} reportes`, name];
-            }}
-          />
-          <Legend />
-          <Bar dataKey="reportes" name="Total Reportes">
-            {comparativoDepartamentos.map((entry, index) => {
-              const colorDepartamento = colores[entry.name.toLowerCase()] || '#8884d8';
-              return <Cell key={`cell-reportes-${index}`} fill={colorDepartamento} />;
-            })}
-          </Bar>
-          <Bar dataKey="resueltos" name="Reportes Resueltos">
-            {comparativoDepartamentos.map((entry, index) => {
-              const colorDepartamento = colores[entry.name.toLowerCase()] || '#82ca9d';
-              return <Cell key={`cell-resueltos-${index}`} fill={colorDepartamento} fillOpacity={0.7} />;
-            })}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="grafico-container-con-export">
+        <div className="grafico-header">
+          <h3>Comparativo de Departamentos</h3>
+          <button 
+            className="btn-export-grafica"
+            onClick={() => exportarGraficaEspecifica('comparativo', comparativoDepartamentos, 'Comparativo Departamentos')}
+            disabled={exportando}
+            title="Exportar esta gráfica a Excel"
+          >
+            <i className="fas fa-file-excel"></i> Exportar
+          </button>
+        </div>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart
+            data={comparativoDepartamentos}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis 
+              label={{ value: 'Reportes / Porcentaje', angle: -90, position: 'insideLeft' }}
+              domain={[0, maxTotal + 5]}
+              allowDecimals={false}
+            />
+            <Tooltip 
+              formatter={(value, name, entry) => {
+                if (name === 'Porcentaje de Resolución') {
+                  return [`${value}%`, name];
+                }
+                return [`${value} reportes`, name];
+              }}
+            />
+            <Legend />
+            <Bar dataKey="reportes" name="Total Reportes">
+              {comparativoDepartamentos.map((entry, index) => {
+                const colorDepartamento = colores[entry.name.toLowerCase()] || '#8884d8';
+                return <Cell key={`cell-reportes-${index}`} fill={colorDepartamento} />;
+              })}
+            </Bar>
+            <Bar dataKey="resueltos" name="Reportes Resueltos">
+              {comparativoDepartamentos.map((entry, index) => {
+                const colorDepartamento = colores[entry.name.toLowerCase()] || '#82ca9d';
+                return <Cell key={`cell-resueltos-${index}`} fill={colorDepartamento} fillOpacity={0.7} />;
+              })}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     );
   };
   
@@ -798,122 +988,6 @@ const DashboardJefeDepartamento = () => {
       </div>
     );
   };
-  
-  // Render de gráfico de tiempos semanales
-  const renderGraficoTiempos = () => {
-    if (!tiemposResolucion || tiemposResolucion.length === 0) {
-      return <div className="sin-datos-mensaje">No hay suficientes datos para mostrar el gráfico de tiempos.</div>;
-    }
-    
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={tiemposResolucion}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="semana" />
-          <YAxis label={{ value: 'Días Promedio', angle: -90, position: 'insideLeft' }} />
-          <Tooltip 
-            formatter={(value, name) => [`${value} días`, name]}
-            labelFormatter={(label) => `Semana: ${label}`}
-          />
-          <Legend />
-          <Bar dataKey="Basura" fill={colores.basura} name="Basura Acumulada" />
-          <Bar dataKey="Alumbrado" fill={colores.alumbrado} name="Alumbrado Público" />
-          <Bar dataKey="Drenaje" fill={colores.drenaje} name="Drenajes Obstruidos" />
-          <Bar dataKey="Bacheo" fill={colores.bacheo} name="Bacheo" />
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  };
-  
-  // Render de gráfico de tendencias semanales
-  const renderGraficoTendencias = () => {
-    if (!tendenciasSemanal || tendenciasSemanal.length === 0) {
-      return <div className="sin-datos-mensaje">No hay suficientes datos para mostrar las tendencias.</div>;
-    }
-    
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={tendenciasSemanal}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="semana" />
-          <YAxis label={{ value: 'Número de Reportes', angle: -90, position: 'insideLeft' }} />
-          <Tooltip 
-            formatter={(value, name) => [`${value} reportes`, name]}
-            labelFormatter={(label) => `Semana: ${label}`}
-          />
-          <Legend />
-          <Bar dataKey="basura" fill={colores.basura} name="Basura Acumulada" />
-          <Bar dataKey="alumbrado" fill={colores.alumbrado} name="Alumbrado Público" />
-          <Bar dataKey="drenaje" fill={colores.drenaje} name="Drenajes Obstruidos" />
-          <Bar dataKey="bacheo" fill={colores.bacheo} name="Bacheo" />
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  };
-
-  // Render de gráfico de tendencias mensuales
-  const renderGraficoTendenciasMensual = () => {
-    if (!tendenciasMensual || tendenciasMensual.length === 0) {
-      return <div className="sin-datos-mensaje">No hay suficientes datos para mostrar las tendencias mensuales.</div>;
-    }
-    
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={tendenciasMensual}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="mes" />
-          <YAxis label={{ value: 'Número de Reportes', angle: -90, position: 'insideLeft' }} />
-          <Tooltip 
-            formatter={(value, name) => [`${value} reportes`, name]}
-            labelFormatter={(label) => `Mes: ${label}`}
-          />
-          <Legend />
-          <Bar dataKey="basura" fill={colores.basura} name="Basura Acumulada" />
-          <Bar dataKey="alumbrado" fill={colores.alumbrado} name="Alumbrado Público" />
-          <Bar dataKey="drenaje" fill={colores.drenaje} name="Drenajes Obstruidos" />
-          <Bar dataKey="bacheo" fill={colores.bacheo} name="Bacheo" />
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  };
-
-  // Render de gráfico de tiempos mensuales
-  const renderGraficoTiemposMensual = () => {
-    if (!tendenciasMensual || tendenciasMensual.length === 0) {
-      return <div className="sin-datos-mensaje">No hay suficientes datos para mostrar los tiempos mensuales.</div>;
-    }
-    
-    return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={tendenciasMensual}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="mes" />
-          <YAxis label={{ value: 'Días Promedio', angle: -90, position: 'insideLeft' }} />
-          <Tooltip 
-            formatter={(value, name) => [`${value} días`, name]}
-            labelFormatter={(label) => `Mes: ${label}`}
-          />
-          <Legend />
-          <Bar dataKey="tiempoPromedioBasura" fill={colores.basura} name="Basura Acumulada" />
-          <Bar dataKey="tiempoPromedioAlumbrado" fill={colores.alumbrado} name="Alumbrado Público" />
-          <Bar dataKey="tiempoPromedioDrenaje" fill={colores.drenaje} name="Drenajes Obstruidos" />
-          <Bar dataKey="tiempoPromedioBacheo" fill={colores.bacheo} name="Bacheo" />
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  };
 
   return (
     <div className="dashboard-jefe-container">
@@ -921,6 +995,14 @@ const DashboardJefeDepartamento = () => {
         <h1>Dashboard de Departamentos</h1>
         <p>Monitoreo de desempeño y estadísticas de servicios municipales</p>
       </div>
+      
+      {/* Mensaje de exportación */}
+      {mensajeExportacion && (
+        <div className="mensaje-exportacion">
+          <i className="fas fa-info-circle"></i>
+          {mensajeExportacion}
+        </div>
+      )}
       
       {/* Filtros */}
       <div className="filtros-container">
@@ -971,11 +1053,19 @@ const DashboardJefeDepartamento = () => {
         </div>
         
         <button 
-          className="btn-exportar" 
-          onClick={exportarReportes}
-          disabled={cargando || reportes.length === 0}
+          className="btn-exportar-completo" 
+          onClick={exportarDashboardCompleto}
+          disabled={exportando || reportes.length === 0}
         >
-          Exportar a Excel
+          {exportando ? (
+            <>
+              <i className="fas fa-spinner fa-spin"></i> Exportando...
+            </>
+          ) : (
+            <>
+              <i className="fas fa-file-excel"></i> Exportar Dashboard Completo
+            </>
+          )}
         </button>
       </div>
       

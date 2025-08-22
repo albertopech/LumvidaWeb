@@ -19,6 +19,8 @@ import GestionBrigadas from '../views/GestionBrigadas';
 // Importar controladores
 import { PermisosController } from '../controllers/PermisosController';
 import { NotificacionesController } from '../controllers/NotificacionesController';
+//Importacion del Logo de Lumvida 
+import lumvidaLogo from '../assets/Lumvida.png';
 
 const PanelLateral = () => {
   const [expanded, setExpanded] = useState(true);
@@ -371,10 +373,13 @@ const PanelLateral = () => {
       >
         <div className="sidebar-header">
           {expanded && (
-            <div className="app-title">
-              ☀️ Panel Administrativo
-            </div>
-          )}
+
+          <div className="app-title">
+            <img src={lumvidaLogo} alt="LUMVIDA Logo" className="app-logo" />
+            Panel Administrativo
+         </div>
+           )}
+          
           <button 
             className="toggle-button"
             onClick={() => setExpanded(!expanded)}
