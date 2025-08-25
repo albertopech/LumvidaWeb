@@ -28,7 +28,6 @@ export class ReportesAlumbradoController {
         );
         querySnapshot = await getDocs(q);
       } catch (indexError) {
-        console.warn("Índice no disponible, usando query simple:", indexError.message);
         // Fallback: query sin orderBy
         const q = query(reportesRef, where("categoria", "==", CATEGORIAS.ALUMBRADO));
         querySnapshot = await getDocs(q);
@@ -49,10 +48,8 @@ export class ReportesAlumbradoController {
         return fechaB - fechaA; // Descendente (más nuevos primero)
       });
       
-      console.log("Reportes de alumbrado cargados:", reportesData.length);
       return { success: true, data: reportesData };
     } catch (error) {
-      console.error("Error al cargar reportes:", error);
       return { 
         success: false, 
         error: "Error al cargar los reportes. Por favor, intenta de nuevo." 
@@ -75,7 +72,6 @@ export class ReportesAlumbradoController {
         return new Date(0); // Fecha por defecto muy antigua
       }
     } catch (e) {
-      console.error("Error al parsear fecha:", e);
       return new Date(0);
     }
   }
@@ -89,11 +85,9 @@ export class ReportesAlumbradoController {
       if (resultado.success) {
         return { success: true, data: resultado.data };
       } else {
-        console.error("Error al cargar brigadas:", resultado.error);
         return { success: false, data: [] };
       }
     } catch (error) {
-      console.error("Error al cargar brigadas:", error);
       return { success: false, data: [] };
     }
   }
@@ -117,7 +111,6 @@ export class ReportesAlumbradoController {
 
       return resultado;
     } catch (error) {
-      console.error("Error al asignar reporte:", error);
       return {
         success: false,
         error: "Error al asignar el reporte a la brigada"
@@ -140,7 +133,6 @@ export class ReportesAlumbradoController {
       const resultado = await BrigadaController.desasignarReporte(brigadaId, reporteId);
       return resultado;
     } catch (error) {
-      console.error("Error al desasignar reporte:", error);
       return {
         success: false,
         error: "Error al desasignar el reporte"
@@ -174,7 +166,6 @@ export class ReportesAlumbradoController {
         }
       };
     } catch (error) {
-      console.error("Error al actualizar estado del reporte:", error);
       return {
         success: false,
         error: "Ocurrió un error al actualizar el estado del reporte. Intente nuevamente."
@@ -215,9 +206,6 @@ export class ReportesAlumbradoController {
       yPos += lineHeight;
       
       pdf.text(`Dirección: ${reporte.direccion || 'No especificada'}`, 15, yPos);
-      yPos += lineHeight;
-      
-      pdf.text(`Colonia: ${reporte.colonia || 'No especificada'}`, 15, yPos);
       yPos += lineHeight;
       
       // Fecha de resolución si existe
@@ -261,7 +249,6 @@ export class ReportesAlumbradoController {
           
           pdf.addImage(reporte.foto, 'JPEG', 15, yPos, 180, 100);
         } catch (imgError) {
-          console.error("Error al agregar imagen al PDF:", imgError);
           pdf.setFont("helvetica", "normal");
           pdf.text("No se pudo cargar la imagen del reporte.", 15, yPos + 10);
         }
@@ -281,7 +268,6 @@ export class ReportesAlumbradoController {
       return { success: true };
       
     } catch (error) {
-      console.error("Error al generar PDF:", error);
       return {
         success: false,
         error: "Ocurrió un error al generar el PDF. Intente nuevamente."
@@ -443,7 +429,6 @@ export class ReportesAlumbradoController {
         minute: '2-digit'
       });
     } catch (e) {
-      console.error("Error al formatear fecha:", e);
       return 'Fecha no disponible';
     }
   }
@@ -465,7 +450,6 @@ export class ReportesAlumbradoController {
         day: '2-digit'
       });
     } catch (e) {
-      console.error("Error al formatear fecha corta:", e);
       return 'N/A';
     }
   }
@@ -480,7 +464,6 @@ export class ReportesAlumbradoController {
         'Fecha',
         'Estado', 
         'Dirección',
-        'Colonia',
         'Brigada Asignada',
         'Fecha Resolución',
         'Comentarios'
@@ -493,7 +476,6 @@ export class ReportesAlumbradoController {
           this.formatearFechaCorta(reporte.fecha),
           reporte.estado || 'pendiente',
           `"${(reporte.direccion || '').replace(/"/g, '""')}"`,
-          `"${(reporte.colonia || '').replace(/"/g, '""')}"`,
           reporte.brigadaAsignada?.nombre || '',
           reporte.fechaResolucion ? this.formatearFechaCorta(reporte.fechaResolucion) : '',
           `"${(reporte.comentario || '').replace(/"/g, '""')}"`
@@ -515,7 +497,6 @@ export class ReportesAlumbradoController {
       
       return { success: true };
     } catch (error) {
-      console.error("Error al exportar CSV:", error);
       return {
         success: false,
         error: "Error al exportar los datos a CSV"

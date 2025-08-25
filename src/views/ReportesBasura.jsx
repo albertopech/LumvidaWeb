@@ -631,11 +631,6 @@ const ReportesBasura = () => {
                 </div>
                 
                 <div className="reporte-campo">
-                  <div className="reporte-campo-label">Colonia:</div>
-                  <div className="reporte-campo-valor">{reporteSeleccionado.colonia || 'No especificada'}</div>
-                </div>
-                
-                <div className="reporte-campo">
                   <div className="reporte-campo-label">Estado:</div>
                   <div className="reporte-campo-valor">
                     <EstadoTag estado={reporteSeleccionado.estado || 'pendiente'} />
@@ -774,4 +769,4 @@ const ReportesBasura = () => {
   );
 };
 
-export default ReportesBasura;
+export default ReportesBasura; 

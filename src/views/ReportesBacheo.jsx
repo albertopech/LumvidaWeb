@@ -79,7 +79,6 @@ const GaleriaImagenes = ({ reporte }) => {
           src={todasLasImagenes[imagenActiva]} 
           alt={`Imagen ${imagenActiva + 1} del reporte`} 
           onError={(e) => {
-            console.error("Error al cargar imagen:", e);
             e.target.style.display = 'none';
           }}
         />
@@ -154,26 +153,19 @@ const ReportesBacheo = () => {
     setLoading(true);
     setError(null);
     
-    console.log("🔄 Iniciando carga de datos...");
-    
     // Cargar reportes
     const resultadoReportes = await ReportesBacheoController.cargarReportes();
     if (resultadoReportes.success) {
-      console.log("✅ Reportes cargados exitosamente:", resultadoReportes.data.length);
       setReportes(resultadoReportes.data);
       setError(null);
     } else {
-      console.error("❌ Error al cargar reportes:", resultadoReportes.error);
       setError(resultadoReportes.error);
     }
     
     // Cargar brigadas
     const resultadoBrigadas = await ReportesBacheoController.cargarBrigadasDisponibles();
     if (resultadoBrigadas.success) {
-      console.log("✅ Brigadas cargadas:", resultadoBrigadas.data.length);
       setBrigadasDisponibles(resultadoBrigadas.data);
-    } else {
-      console.warn("⚠️ No se pudieron cargar las brigadas:", resultadoBrigadas.error);
     }
     
     setLoading(false);
@@ -702,11 +694,6 @@ const ReportesBacheo = () => {
                 <div className="reporte-campo">
                   <div className="reporte-campo-label">Dirección:</div>
                   <div className="reporte-campo-valor">{reporteSeleccionado.direccion || 'Sin dirección'}</div>
-                </div>
-                
-                <div className="reporte-campo">
-                  <div className="reporte-campo-label">Colonia:</div>
-                  <div className="reporte-campo-valor">{reporteSeleccionado.colonia || 'No especificada'}</div>
                 </div>
                 
                 <div className="reporte-campo">

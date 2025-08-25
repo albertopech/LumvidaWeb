@@ -16,8 +16,6 @@ export class ReportesBacheoController {
    */
   static async cargarReportes() {
     try {
-      console.log("🔍 Iniciando carga de reportes de bacheo...");
-      
       const reportesRef = collection(db, "reportes");
       
       // Primero intentamos con orderBy, si falla usamos query simple
@@ -28,29 +26,16 @@ export class ReportesBacheoController {
           where("categoria", "==", CATEGORIAS.BACHEO),
           orderBy("fecha", "desc") // Ordenar por fecha descendente
         );
-        console.log("📝 Query con orderBy configurada");
         querySnapshot = await getDocs(q);
       } catch (indexError) {
-        console.warn("Índice no disponible, usando query simple:", indexError.message);
         // Fallback: query sin orderBy
         const q = query(reportesRef, where("categoria", "==", CATEGORIAS.BACHEO));
-        console.log("📝 Query simple configurada");
         querySnapshot = await getDocs(q);
       }
-      
-      console.log("📊 Documentos encontrados:", querySnapshot.size);
       
       const reportesData = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log("📄 Documento procesado:", doc.id, {
-          categoria: data.categoria,
-          estado: data.estado,
-          fecha: data.fecha,
-          imagenes: data.imagenes ? `${data.imagenes.length} imágenes` : 'Sin imágenes',
-          foto: data.foto ? 'Tiene foto' : 'Sin foto'
-        });
-        
         reportesData.push({
           id: doc.id,
           ...data
@@ -64,10 +49,8 @@ export class ReportesBacheoController {
         return fechaB - fechaA; // Descendente (más nuevos primero)
       });
       
-      console.log("✅ Reportes de bacheo cargados:", reportesData.length);
       return { success: true, data: reportesData };
     } catch (error) {
-      console.error("❌ Error al cargar reportes:", error);
       return { 
         success: false, 
         error: "Error al cargar los reportes. Por favor, intenta de nuevo." 
@@ -134,7 +117,6 @@ export class ReportesBacheoController {
         return new Date(0); // Fecha por defecto muy antigua
       }
     } catch (e) {
-      console.error("Error al parsear fecha:", e);
       return new Date(0);
     }
   }
@@ -148,11 +130,9 @@ export class ReportesBacheoController {
       if (resultado.success) {
         return { success: true, data: resultado.data };
       } else {
-        console.error("Error al cargar brigadas:", resultado.error);
         return { success: false, data: [] };
       }
     } catch (error) {
-      console.error("Error al cargar brigadas:", error);
       return { success: false, data: [] };
     }
   }
@@ -176,7 +156,6 @@ export class ReportesBacheoController {
 
       return resultado;
     } catch (error) {
-      console.error("Error al asignar reporte:", error);
       return {
         success: false,
         error: "Error al asignar el reporte a la brigada"
@@ -199,7 +178,6 @@ export class ReportesBacheoController {
       const resultado = await BrigadaController.desasignarReporte(brigadaId, reporteId);
       return resultado;
     } catch (error) {
-      console.error("Error al desasignar reporte:", error);
       return {
         success: false,
         error: "Error al desasignar el reporte"
@@ -233,7 +211,6 @@ export class ReportesBacheoController {
         }
       };
     } catch (error) {
-      console.error("Error al actualizar estado del reporte:", error);
       return {
         success: false,
         error: "Ocurrió un error al actualizar el estado del reporte. Intente nuevamente."
@@ -274,9 +251,6 @@ export class ReportesBacheoController {
       yPos += lineHeight;
       
       pdf.text(`Dirección: ${reporte.direccion || 'No especificada'}`, 15, yPos);
-      yPos += lineHeight;
-      
-      pdf.text(`Colonia: ${reporte.colonia || 'No especificada'}`, 15, yPos);
       yPos += lineHeight;
       
       // Fecha de resolución si existe
@@ -322,7 +296,6 @@ export class ReportesBacheoController {
           // Usar la imagen principal
           pdf.addImage(imagenPrincipal, 'JPEG', 15, yPos, 180, 100);
         } catch (imgError) {
-          console.error("Error al agregar imagen al PDF:", imgError);
           pdf.setFont("helvetica", "normal");
           pdf.text("No se pudo cargar la imagen del reporte.", 15, yPos + 10);
         }
@@ -342,7 +315,6 @@ export class ReportesBacheoController {
       return { success: true };
       
     } catch (error) {
-      console.error("Error al generar PDF:", error);
       return {
         success: false,
         error: "Ocurrió un error al generar el PDF. Intente nuevamente."
@@ -504,7 +476,6 @@ export class ReportesBacheoController {
         minute: '2-digit'
       });
     } catch (e) {
-      console.error("Error al formatear fecha:", e);
       return 'Fecha no disponible';
     }
   }
@@ -526,7 +497,6 @@ export class ReportesBacheoController {
         day: '2-digit'
       });
     } catch (e) {
-      console.error("Error al formatear fecha corta:", e);
       return 'N/A';
     }
   }
@@ -541,7 +511,6 @@ export class ReportesBacheoController {
         'Fecha',
         'Estado', 
         'Dirección',
-        'Colonia',
         'Brigada Asignada',
         'Fecha Resolución',
         'Comentarios'
@@ -554,7 +523,6 @@ export class ReportesBacheoController {
           this.formatearFechaCorta(reporte.fecha),
           reporte.estado || 'pendiente',
           `"${(reporte.direccion || '').replace(/"/g, '""')}"`,
-          `"${(reporte.colonia || '').replace(/"/g, '""')}"`,
           reporte.brigadaAsignada?.nombre || '',
           reporte.fechaResolucion ? this.formatearFechaCorta(reporte.fechaResolucion) : '',
           `"${(reporte.comentario || '').replace(/"/g, '""')}"`
@@ -576,7 +544,6 @@ export class ReportesBacheoController {
       
       return { success: true };
     } catch (error) {
-      console.error("Error al exportar CSV:", error);
       return {
         success: false,
         error: "Error al exportar los datos a CSV"

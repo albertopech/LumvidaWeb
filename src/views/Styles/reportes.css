@@ -610,6 +610,22 @@ body {
   background-color: var(--success-color);
 }
 
+.panel-admin-card.en-revision {
+  border-left-color: #f97316; /* Naranja */
+}
+
+.panel-admin-card.asignados {
+  border-left-color: #3b82f6; /* Azul */
+}
+
+.panel-admin-card.en-revision .panel-card-icon {
+  background-color: #f97316; /* Naranja */
+}
+
+.panel-admin-card.asignados .panel-card-icon {
+  background-color: #3b82f6; /* Azul */
+}
+
 .panel-card-content {
   flex: 1;
 }
